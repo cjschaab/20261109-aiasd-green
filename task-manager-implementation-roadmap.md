@@ -39,7 +39,7 @@ revisions:
 **Status:** G0 baseline evidence complete; G0 remains open pending explicit approval of VS-01 for implementation
 **Version:** 0.4
 **Date:** 2026-11-13  
-**Planning owner:** TBD  
+**Planning owner:** @cjschaab (product owner, security owner, and technical lead)  
 **Delivery dates, effort, budget, and named slice owners:** Not estimated; no team capacity or delivery constraints were supplied.
 
 ## 1. Scope and Sources
@@ -49,7 +49,7 @@ This plan sequences the proposed v1 task-manager scope as end-to-end vertical sl
 Sources:
 
 - [Task Manager Product Requirements Specification](task-manager-requirements.md), v0.8. On 2026-11-13, @cjschaab confirmed they are the product owner and approved it as-is. The PRD defines functional requirements FR-01 through FR-13 and quality requirements QR-01 through QR-06.
-- [Task Manager Architecture](task-manager-architecture.md), v0.2, approved by the requester on 2026-11-13. The technical lead confirmed architecture alignment with PRD v0.8. It selects one ASP.NET Core modular application serving React assets, PostgreSQL as the authoritative application store, and a separate protected deletion ledger. It does not authorize implementation by itself.
+- [Task Manager Architecture](task-manager-architecture.md), v0.4, approved by the requester on 2026-11-13. The technical lead confirmed architecture alignment with PRD v0.8. It selects one ASP.NET Core modular application serving React assets, PostgreSQL as the authoritative application store, and a separate protected deletion ledger. It does not authorize implementation by itself.
 - Repository instructions select C#/ASP.NET Core, React/TypeScript, and PostgreSQL. The technical lead selected .NET 10 LTS / ASP.NET Core 10, PostgreSQL 18, EF Core 10 with Npgsql, React 19 with strict TypeScript and Vite, and Node.js 26 LTS. Selected test tooling is xUnit, `WebApplicationFactory`, PostgreSQL-backed integration tests using a disposable database, Vitest with React Testing Library, and Playwright. The baseline pins .NET SDK 10.0.403; Node.js 26.13.1; EF Core and `dotnet-ef` 10.0.15; Npgsql 10.0.3; React 19.3.1; TypeScript 7.0.2; Vite 8.3.8; Vitest 5.1.0; React Testing Library 16.3.3; Playwright 1.65.0; and PostgreSQL 18.7 (image pinned by digest).
 
 The architecture document names PRD v0.6 as its product basis, while the current PRD is v0.8; the technical lead confirmed alignment with v0.8 on 2026-11-13. @cjschaab confirmed they are the product owner, security owner, and technical lead and approved the recorded PRD and VS-01 security recommendations. This repository is the application target. A reproducible baseline is now present; it contains no workspace behavior, application schema, or migration.
@@ -61,7 +61,7 @@ The architecture document names PRD v0.6 as its product basis, while the current
 - Hosting can remain provider-neutral during early slices, but a provider and deployment details are required before pilot deployment.
 - The security owner approved VS-01's account-free workspace bootstrap, initial credential lifecycle, and per-IP creation limits. Pairing/recovery and later operations, analytics/privacy, and accessibility decisions remain gated with their designated owners.
 - The independent deletion ledger and the requirement to make acknowledged deletions durable before reporting success are high-risk dependencies. Their cross-store write, retry, retention, and restore-reconciliation protocol must be designed and tested before the deletion/restore slice.
-- A single-user workspace and manually entered pairing code are draft product choices. The security owner approved account-free VS-01 bootstrap; pairing issuer eligibility, grant expiry, recovery proof, and related later-slice policies remain to be approved.
+- The personal, single-owner workspace is approved in PRD v0.8; the manually entered pairing code is a selected interaction, with issuer eligibility, grant expiry, recovery proof, and related later-slice policies still to be approved.
 
 ## 3. Readiness Gate
 
@@ -76,7 +76,7 @@ Required before the first product slice starts:
 
 ### Baseline evidence
 
-The repository pins tool and dependency versions in `global.json`, `.nvmrc`, `Directory.Packages.props`, `dotnet-tools.json`, and the npm/NuGet lockfiles. `compose.yaml` pins PostgreSQL 18.7 by immutable image digest. Run `./scripts/verify.sh` from the repository root with the pinned Node.js and .NET SDK, Docker Compose, and Playwright's Chromium installed. The script runs clean locked restores, frontend unit/type checks and production build, .NET build and API tests, a PostgreSQL-backed connectivity smoke test, and a Playwright browser smoke against the ASP.NET Core host.
+The repository pins tool and dependency versions in `global.json`, `.nvmrc`, `Directory.Packages.props`, `dotnet-tools.json`, and the npm/NuGet lockfiles. `compose.yaml` pins PostgreSQL 18.7 by immutable image digest. Run `./scripts/verify.sh` from the repository root with the pinned Node.js and .NET SDK, Python 3, Docker Compose, and Playwright's Chromium installed. The script runs clean locked restores, confirms the pinned `dotnet-ef` executable, runs frontend unit/type checks and production build, .NET build and API tests, a PostgreSQL-backed connectivity smoke test, and a Playwright browser smoke against the ASP.NET Core host.
 
 Verification run from a clean state on 2026-11-13 passed: frontend test (1 passed), .NET build (0 warnings, 0 errors), API/PostgreSQL tests (2 passed), and Playwright smoke (1 passed). The baseline check validates tool execution and host/database wiring only; it does not validate any VS-01 behavior. Re-run `./scripts/verify.sh` to reproduce the result.
 

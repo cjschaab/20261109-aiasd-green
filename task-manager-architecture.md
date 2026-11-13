@@ -28,7 +28,7 @@ revisions:
   - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
     model: "unknown/unknown@unknown"
     date: "2026-11-13"
-    change: "Recorded the approved PRD v0.8 basis, pinned stack, and reproducible G0 baseline evidence."
+    change: "Recorded the approved PRD v0.8 basis and pinned baseline; G0 remains open pending explicit VS-01 specification approval."
     ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
@@ -55,7 +55,7 @@ This design records the architecture approved by the technical lead and is groun
 - The pinned baseline selects .NET SDK 10.0.403 / ASP.NET Core 10, EF Core 10.0.15, Npgsql EF Core provider 10.0.3, PostgreSQL 18, React 19.3.1, TypeScript 7.0.2, Vite 8.3.8, and Node.js 26.13.1. Backend tests use xUnit 2.9.3 and `WebApplicationFactory`; PostgreSQL tests use a disposable PostgreSQL 18.7 container; frontend tests use Vitest 5.1.0, React Testing Library 16.3.3, and Playwright 1.65.0. Exact package dependencies are lockfile-pinned.
 - Backend guidance specifies one modular web application/API. This draft keeps one backend deployment and recommends serving the React assets from it.
 - The PRD v0.8 product scope and defaults are approved; candidate pilot service targets and later-slice security/operations decisions remain subject to their stated gates.
-- No application code, deployed system, workload measurements, budget, or hosting environment was available for this design.
+- No workspace feature implementation, deployed system, workload measurements, budget, or hosting environment was available for this design; the reproducible baseline and smoke checks are recorded in the roadmap.
 - The proposed single-deployable layout is an architectural recommendation. It does not select a cloud provider, container runtime, database hosting model, or operations owner.
 
 ## Architecture overview
@@ -303,7 +303,7 @@ The product owner approved the PRD v0.8 product decisions. Later-slice decisions
 | Pairing and recovery rules | A code-entry interaction is selected for the draft, but credential issuance/recovery choices affect workspace security and lockout risk. | Security owner approves issuer eligibility, expiry, recovery proof, rotation, rate limits, and revocation scope. |
 | Deletion-ledger protocol | The draft now states a durability and fail-closed guarantee; the cross-store write and recovery protocol is not designed. | Technical/operations owners define ordering, retry/partial-failure behavior, retention, and restore tests. |
 | Service, accessibility, and support targets | Pilot metrics are baseline-first; numeric targets, accessibility conformance scope, and support coverage remain unapproved. | Operations, accessibility, product, and security owners validate targets and acceptance evidence. |
-| Workspace timezone and date semantics | A browser-zone default is proposed, but product semantics and user control must be approved. | Product owner confirms the default, change behavior, and overdue-date boundary. |
+| Workspace timezone and date semantics | PRD v0.8 approves the browser-zone default, user-visible zone, change behavior, and overdue-date boundary. | The implementation must follow the approved PRD behavior. |
 | API style | Controllers vs. minimal APIs remains an implementation choice; selected runtime, data-access, migration, and test tooling are recorded above. | Technical lead selects endpoint style during implementation planning; baseline verification is recorded in the roadmap. |
 | Renderer validation | Mermaid source follows repository conventions, but rendered layout and theme contrast were not checked in the target renderer. | Validate diagrams in the repository's target Markdown renderer before approval. |
 

@@ -54,7 +54,7 @@ revisions:
   - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
     model: "unknown/unknown@unknown"
     date: "2026-11-13"
-    change: "Recorded @cjschaab's confirmed product-owner authority and PRD v0.8 approval; updated implementation baseline and G0 evidence."
+    change: "Recorded @cjschaab's confirmed product-owner authority and PRD v0.8 approval; clarified current approval status and baseline evidence."
     ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
@@ -99,7 +99,7 @@ The definitions below are proposed for pilot measurement. Collect baseline data 
 - **Workspace user:** captures, organizes, reviews, and completes tasks from an authorized browser/device.
 - **Paired-device user:** authorizes another device to access an existing workspace and can recover access when needed.
 
-These roles describe the selected v1 draft model, not an approved account or authorization policy. Per requester direction, one workspace has one owner and paired devices represent that owner; cross-person sharing is excluded from v1. Formal product and security approval remains pending.
+These roles describe the approved v1 product model, not an authorization implementation. PRD v0.8 approves one owner per workspace and same-owner paired devices, with cross-person sharing excluded from v1. VS-01 bootstrap and credential policy are security-approved; pairing and recovery implementation details remain gated.
 
 ### Primary scenarios
 
@@ -134,7 +134,7 @@ Non-goals follow the current repository guidance where specified; the remaining 
 
 ## 6. Functional Requirements
 
-Each acceptance statement is intended to be observable in a product test. “Repository constraint” identifies existing workspace guidance, not approval of this product specification.
+Each acceptance statement is intended to be observable in a product test. “Repository constraint” identifies existing workspace guidance, not proof that the behavior is implemented.
 
 | ID | Requirement | Acceptance criteria | Source / rationale |
 | --- | --- | --- | --- |
@@ -149,7 +149,7 @@ Each acceptance statement is intended to be observable in a product test. “Rep
 | FR-09 | A user shall be able to search tasks by title within the authorized workspace. | Given a title query, when submitted, then results contain only matching tasks in the authorized workspace; matching is case-insensitive and treats search characters literally. | Repository constraint: PostgreSQL guidance specifies literal, case-insensitive substring matching. Search scope/filter controls TBD. |
 | FR-10 | The app shall refresh server-confirmed workspace data when opened, when the user returns to it, and on explicit user request. | Given successful refresh, then current confirmed data is shown; given a refresh failure, then the last view and unsaved drafts remain and a stale/error state is shown rather than an empty success state. | Repository constraint: React/TypeScript guidance; no polling or hidden offline queue. |
 | FR-11 | The system shall detect stale task changes instead of silently overwriting newer data. | Given two devices editing the same task version, when the older version is submitted after a newer change, then the stale request is reported as a conflict, the newer confirmed data remains intact, and the user's draft is retained for resolution. | Repository constraint: version-aware mutations and explicit conflict state. |
-| FR-12 | A user shall be able to authorize another device and recover workspace access through approved flows. | Given a valid, unexpired, unused pairing grant, when an authorized issuer completes pairing, then the new device can access only that workspace; expired or reused grants fail safely. Given a recovery flow, then completion rotates or revokes prior access as defined by the approved security policy. | Repository constraint: pairing and recovery requirements exist; user-facing flow, eligibility, and recovery policy require security/product approval. |
+| FR-12 | A user shall be able to authorize another device and recover workspace access through approved flows. | Given a valid, unexpired, unused pairing grant, when an authorized issuer completes pairing, then the new device can access only that workspace; expired or reused grants fail safely. Given a recovery flow, then completion rotates or revokes prior access as defined by the approved security policy. | The same-owner model and code-entry interaction are selected; security approval of issuer eligibility, grant expiry, recovery proof, and recovery policy remains required before VS-03. |
 | FR-13 | The app shall report loading, validation, access, unavailable-resource, conflict, rate-limit, and service-failure outcomes distinctly and accessibly. | Given each outcome, then the user receives a clear, actionable status; status is not communicated by color alone and is announced to assistive technology without unexpected focus movement. | Repository constraint: React and ASP.NET Core instructions. |
 
 ## 7. Quality and Operational Requirements
@@ -160,7 +160,7 @@ Each acceptance statement is intended to be observable in a product test. “Rep
 | QR-02 | The system shall prevent access to tasks and lists outside the authenticated workspace. | Authorization and integration tests attempt cross-workspace reads and writes; no task content or existence is disclosed. |
 | QR-03 | The system shall not expose credentials, pairing grants, recovery secrets, or task content in logs, URLs, analytics, or client-side persistent storage. | Inspect telemetry, logs, network URLs, and browser persistence in security testing. |
 | QR-04 | The system shall preserve confirmed writes across retries and concurrent edits without silent duplication or lost updates. | Integration tests cover ambiguous responses, retry behavior, version conflicts, and atomic state changes. Exact latency/availability targets are TBD. |
-| QR-05 | The system shall keep date-only due-date behavior stable across browser and workspace time zones. | Boundary tests cover date display and workspace-zone calendar behavior. Draft default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes; product approval remains pending. |
+| QR-05 | The system shall keep date-only due-date behavior stable across browser and workspace time zones. | Boundary tests cover date display and workspace-zone calendar behavior. Approved default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes. |
 | QR-06 | The system shall not report a task deletion complete until the primary deletion state and independent recovery evidence are durable, and shall not expose restored task data until all acknowledged deletions and access-state safeguards have been reconciled. | Deletion/recovery tests prove that every acknowledged deletion is applied before restored data is served; if the ledger is unavailable or reconciliation is incomplete, the restored service remains unavailable. Define and test the cross-store write protocol. Backup retention is limited to the repository-guided 30-day window; responsible owner to confirm operational policy. |
 
 ### Candidate pilot service targets (not approved)
@@ -217,10 +217,10 @@ The product defaults below are approved in PRD v0.8 by product owner @cjschaab. 
 
 ### Decisions Still Requiring Confirmation
 
-- Security owner: approve the manual pairing-code interaction, issuer eligibility, expiry, recovery-secret issuance/rotation, and pairing/recovery rate limits. VS-01 credential expiry/revocation and workspace-creation limits are approved separately.
+- Security owner: approve pairing issuer eligibility, grant expiry, recovery-secret issuance/rotation and proof, and pairing/recovery rate limits before VS-03. VS-01 bootstrap, credential expiry/revocation, and workspace-creation limits are approved.
 - Product and analytics owners: approve candidate metric targets, measurement window, and privacy-preserving event collection.
 - Operations and accessibility owners: validate hosting constraints, restore objectives and deletion-ledger protocol, pilot support coverage, and accessibility conformance scope. Keep service targets baseline-first until pilot evidence is reviewed.
-- Technical lead: confirm the approved architecture is consistent with stack guidance and define the deletion-ledger consistency protocol. Architecture/PRD alignment and the initial reproducible baseline are recorded in the roadmap.
+- Technical lead: define the deletion-ledger consistency protocol. Architecture/PRD alignment and the initial reproducible baseline are recorded in the roadmap.
 
 ## 10. Acceptance and Approval
 

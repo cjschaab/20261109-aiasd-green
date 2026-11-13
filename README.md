@@ -30,7 +30,7 @@ revisions:
   - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
     model: "unknown/unknown@unknown"
     date: "2026-11-13"
-    change: "Recorded completed G0 baseline evidence and the approved VS-01 handoff."
+    change: "Recorded G0 baseline evidence; explicit VS-01 implementation approval remains outstanding."
     ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
@@ -48,10 +48,10 @@ The [VS-01 workspace creation specification](specs/task-manager/vs-01-create-wor
 
 The repository pins .NET SDK 10.0.403, Node.js 26.13.1, the frontend dependency tree in `web/package-lock.json`, the .NET package trees in `packages.lock.json`, and `dotnet-ef` 10.0.15. PostgreSQL smoke tests use PostgreSQL 18.7 pinned by image digest in `compose.yaml`.
 
-Install the exact Node.js and .NET SDK versions, Docker Compose, and Chromium for Playwright, then run:
+Install the exact Node.js and .NET SDK versions, Python 3, Docker Compose, and Chromium for Playwright, then run:
 
 ```sh
 ./scripts/verify.sh
 ```
 
-The script performs clean restores, frontend type/unit checks and production build, .NET build and API tests, PostgreSQL 18 connectivity verification, and a Playwright browser check against the ASP.NET Core host. It starts and removes a disposable database container. This baseline includes only a health endpoint and placeholder UI; it does not implement workspace creation, application schema, or migrations.
+The script performs clean restores, checks the pinned `dotnet-ef` executable, runs frontend type/unit checks and production build, .NET build and API tests, PostgreSQL 18 connectivity verification, and a Playwright browser check against the ASP.NET Core host. It starts and removes a disposable database container. This baseline includes only a health endpoint and placeholder UI; it does not implement workspace creation, application schema, or migrations.

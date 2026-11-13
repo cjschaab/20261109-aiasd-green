@@ -22,6 +22,7 @@ dotnet clean TaskManager.slnx
 rm -rf src/TaskManager.Api/bin src/TaskManager.Api/obj tests/TaskManager.Api.Tests/bin tests/TaskManager.Api.Tests/obj
 npm ci --prefix web
 dotnet tool restore
+dotnet ef --version
 dotnet restore TaskManager.slnx --locked-mode
 npm --prefix web test
 npm --prefix web run build

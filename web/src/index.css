@@ -1,0 +1,19 @@
+:root {
+  color: #17212b;
+  background: #fff;
+  font-family: system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 48rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+}

@@ -51,22 +51,27 @@ revisions:
     date: "2026-11-13"
     change: "Recorded requester approval of PRD v0.8 as-is; organizational approval authority remains unspecified."
     ai_log: "ai-logs/2026/11/13/40889748-90ba-4e66-aa9a-b8c8df7800b0/conversation.md"
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded @cjschaab's confirmed product-owner authority and PRD v0.8 approval; clarified current approval status and baseline evidence."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
 # Task Manager Product Requirements Specification
 
-**Status:** Requester stated approval of v0.8 as-is on 2026-11-13; organizational product-approval role unspecified  
+**Status:** Approved by product owner @cjschaab on 2026-11-13  
 **Version:** 0.8
 **Date:** 2026-11-13  
-**Product owner / approver:** TBD  
+**Product owner / approver:** @cjschaab (confirmed product-owner authority on 2026-11-13)  
 **Source:** User request to create a product requirement specification; repository task-manager instructions.  
-**Evidence note:** No user research, stakeholder interview, or existing product behavior was available when v0.6 was prepared. Architecture approval by @cjschaab was recorded on 2026-11-13; organizational approval role was not specified. The requester stated approval of v0.8 as-is on 2026-11-13; the organizational product-approval role was not specified. Product choices below are recorded as requester-approved, but approval authority is not independently established.
+**Evidence note:** No user research, stakeholder interview, or existing product behavior was available when v0.6 was prepared. On 2026-11-13, @cjschaab confirmed product-owner authority and approved PRD v0.8 as-is. The technical lead separately confirmed architecture alignment with v0.8.
 
 ## 1. Summary
 
 Define a browser-based task manager that lets people organize tasks in a workspace, group them into lists, set optional due dates, and track completion. Users access their workspace from authorized devices. The first release is proposed as a focused task-and-list workflow, with clear handling of access, refresh, validation, and concurrent edits.
 
-This specification is a starting point for product review, not evidence of formal stakeholder approval. The v1 individual-user collaboration model is selected for this draft per requester direction; launch context and success targets still need owner confirmation.
+PRD v0.8 is approved by product owner @cjschaab. The v1 individual-owner workspace model and product defaults are approved; launch context, user research, and success targets still need validation or owner decisions as described below.
 
 ## 2. Problem and Opportunity
 
@@ -94,7 +99,7 @@ The definitions below are proposed for pilot measurement. Collect baseline data 
 - **Workspace user:** captures, organizes, reviews, and completes tasks from an authorized browser/device.
 - **Paired-device user:** authorizes another device to access an existing workspace and can recover access when needed.
 
-These roles describe the selected v1 draft model, not an approved account or authorization policy. Per requester direction, one workspace has one owner and paired devices represent that owner; cross-person sharing is excluded from v1. Formal product and security approval remains pending.
+These roles describe the approved v1 product model, not an authorization implementation. PRD v0.8 approves one owner per workspace and same-owner paired devices, with cross-person sharing excluded from v1. VS-01 bootstrap and credential policy are security-approved; pairing and recovery implementation details remain gated.
 
 ### Primary scenarios
 
@@ -129,7 +134,7 @@ Non-goals follow the current repository guidance where specified; the remaining 
 
 ## 6. Functional Requirements
 
-Each acceptance statement is intended to be observable in a product test. “Repository constraint” identifies existing workspace guidance, not approval of this product specification.
+Each acceptance statement is intended to be observable in a product test. “Repository constraint” identifies existing workspace guidance, not proof that the behavior is implemented.
 
 | ID | Requirement | Acceptance criteria | Source / rationale |
 | --- | --- | --- | --- |
@@ -144,7 +149,7 @@ Each acceptance statement is intended to be observable in a product test. “Rep
 | FR-09 | A user shall be able to search tasks by title within the authorized workspace. | Given a title query, when submitted, then results contain only matching tasks in the authorized workspace; matching is case-insensitive and treats search characters literally. | Repository constraint: PostgreSQL guidance specifies literal, case-insensitive substring matching. Search scope/filter controls TBD. |
 | FR-10 | The app shall refresh server-confirmed workspace data when opened, when the user returns to it, and on explicit user request. | Given successful refresh, then current confirmed data is shown; given a refresh failure, then the last view and unsaved drafts remain and a stale/error state is shown rather than an empty success state. | Repository constraint: React/TypeScript guidance; no polling or hidden offline queue. |
 | FR-11 | The system shall detect stale task changes instead of silently overwriting newer data. | Given two devices editing the same task version, when the older version is submitted after a newer change, then the stale request is reported as a conflict, the newer confirmed data remains intact, and the user's draft is retained for resolution. | Repository constraint: version-aware mutations and explicit conflict state. |
-| FR-12 | A user shall be able to authorize another device and recover workspace access through approved flows. | Given a valid, unexpired, unused pairing grant, when an authorized issuer completes pairing, then the new device can access only that workspace; expired or reused grants fail safely. Given a recovery flow, then completion rotates or revokes prior access as defined by the approved security policy. | Repository constraint: pairing and recovery requirements exist; user-facing flow, eligibility, and recovery policy require security/product approval. |
+| FR-12 | A user shall be able to authorize another device and recover workspace access through approved flows. | Given a valid, unexpired, unused pairing grant, when an authorized issuer completes pairing, then the new device can access only that workspace; expired or reused grants fail safely. Given a recovery flow, then completion rotates or revokes prior access as defined by the approved security policy. | The same-owner model and code-entry interaction are selected; security approval of issuer eligibility, grant expiry, recovery proof, and recovery policy remains required before VS-03. |
 | FR-13 | The app shall report loading, validation, access, unavailable-resource, conflict, rate-limit, and service-failure outcomes distinctly and accessibly. | Given each outcome, then the user receives a clear, actionable status; status is not communicated by color alone and is announced to assistive technology without unexpected focus movement. | Repository constraint: React and ASP.NET Core instructions. |
 
 ## 7. Quality and Operational Requirements
@@ -155,7 +160,7 @@ Each acceptance statement is intended to be observable in a product test. “Rep
 | QR-02 | The system shall prevent access to tasks and lists outside the authenticated workspace. | Authorization and integration tests attempt cross-workspace reads and writes; no task content or existence is disclosed. |
 | QR-03 | The system shall not expose credentials, pairing grants, recovery secrets, or task content in logs, URLs, analytics, or client-side persistent storage. | Inspect telemetry, logs, network URLs, and browser persistence in security testing. |
 | QR-04 | The system shall preserve confirmed writes across retries and concurrent edits without silent duplication or lost updates. | Integration tests cover ambiguous responses, retry behavior, version conflicts, and atomic state changes. Exact latency/availability targets are TBD. |
-| QR-05 | The system shall keep date-only due-date behavior stable across browser and workspace time zones. | Boundary tests cover date display and workspace-zone calendar behavior. Draft default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes; product approval remains pending. |
+| QR-05 | The system shall keep date-only due-date behavior stable across browser and workspace time zones. | Boundary tests cover date display and workspace-zone calendar behavior. Approved default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes. |
 | QR-06 | The system shall not report a task deletion complete until the primary deletion state and independent recovery evidence are durable, and shall not expose restored task data until all acknowledged deletions and access-state safeguards have been reconciled. | Deletion/recovery tests prove that every acknowledged deletion is applied before restored data is served; if the ledger is unavailable or reconciliation is incomplete, the restored service remains unavailable. Define and test the cross-store write protocol. Backup retention is limited to the repository-guided 30-day window; responsible owner to confirm operational policy. |
 
 ### Candidate pilot service targets (not approved)
@@ -165,7 +170,7 @@ These are starting recommendations for a small, non-critical pilot, not commitme
 - **Performance:** 95th-percentile response time below 500 ms for task-list reads and task create/update requests under the agreed pilot load.
 - **Availability:** 99.5% monthly availability, excluding only explicitly agreed maintenance windows.
 - **Recovery:** recovery point objective and recovery time objective of 24 hours each; validate through restore exercises, including deletion-ledger reapplication.
-- **Rate limits:** maintain separate limits for workspace creation, pairing, recovery, and task reads/writes. Set numeric values after abuse-case review and load testing; security and operations owners must document and test them before pilot.
+- **Rate limits:** the security owner approved workspace creation limits of 5 attempts per source IP per hour and 20 per IP per day; return retry guidance and challenge repeated abuse. Pairing, recovery, and task read/write limits remain unset until abuse-case review and load testing, and must be documented and tested before pilot.
 - **Support:** staffed business-hours pilot support with an initial response by the next business day. Confirm channel, support coverage, and time zone with the operations owner.
 - **Accessibility:** target WCAG 2.2 AA for the in-scope browser flows, subject to product and accessibility-owner confirmation.
 
@@ -173,18 +178,18 @@ The numeric targets above are proposals because no approved targets or operating
 
 ## 8. Constraints and Dependencies
 
-- **Selected technology constraints (repository guidance):** C# and ASP.NET Core in one modular web application/API; React and TypeScript browser interface; PostgreSQL authoritative persistence.
-- **Unselected technical choices:** framework/library versions, endpoint style, build/test tooling, hosting provider, database access and migration libraries, and deployment topology.
+- **Selected technology constraints:** .NET SDK 10.0.403 / ASP.NET Core 10, EF Core 10.0.15 with Npgsql provider 10.0.3, PostgreSQL 18, React 19.3.1, strict TypeScript 7.0.2, Vite 8.3.8, and Node.js 26.13.1. Tests use xUnit, `WebApplicationFactory`, PostgreSQL-backed integration checks, Vitest/React Testing Library, and Playwright.
+- **Remaining technical choices:** API endpoint style, hosting provider, and deployment topology.
 - **Related policy:** workspace-scoped authorization, secure device credentials, pairing/recovery safeguards, atomic version-aware updates, safe retry behavior, date-only due dates, sanitized logging, and restore-time deletion reconciliation are detailed in [ASP.NET Core instructions](.github/instructions/aspnet-core.instructions.md), [React/TypeScript instructions](.github/instructions/react-typescript.instructions.md), and [PostgreSQL instructions](.github/instructions/postgresql.instructions.md).
-- **Architecture status:** [Task Manager Architecture](task-manager-architecture.md) records approval by @cjschaab dated 2026-11-13. Organizational approval role was not specified; the PRD remains unapproved. The architecture recommends one ASP.NET Core modular app serving the React client, with PostgreSQL authoritative, and keeps hosting provider-neutral.
-- **Delivery dependency:** security owner review of workspace creation, device pairing, recovery, credential revocation, and rate-limit policy before pilot.
+- **Architecture status:** [Task Manager Architecture](task-manager-architecture.md) records approval by @cjschaab as technical lead on 2026-11-13 and confirms alignment with approved PRD v0.8. It specifies one ASP.NET Core modular app serving the React client, with PostgreSQL authoritative, and keeps hosting provider-neutral.
+- **Delivery dependency:** VS-01 bootstrap, credential lifecycle, and workspace-creation limits are approved; security approval of device pairing and recovery remains required before VS-03.
 
 ## 9. Assumptions, Risks, and Open Questions
 
 ### Assumptions to validate
 
 - The initial product is a browser-based task manager used through one or more authorized devices.
-- For this draft, a workspace is personal to one owner and that owner may use multiple workspaces; formal product approval remains pending.
+- PRD v0.8 approves a personal workspace for one owner, with support for multiple workspaces per owner.
 - A minimal launch should prioritize reliable capture, list organization, due dates, search, completion, and explicit deletion over advanced planning features.
 - Users benefit from list-based organization; required task fields beyond title, completion state, list, and optional due date are unknown.
 
@@ -192,35 +197,34 @@ The numeric targets above are proposals because no approved targets or operating
 
 - Without target-user discovery, the proposed user problem, task model, and scope may not match the product's intended audience.
 - Device pairing and recovery have security and usability trade-offs that cannot be settled by this PRD alone.
-- Architecture approval is recorded from the requester, but the deletion-ledger protocol, recovery details, hosting context, and several product policies still need owner decisions.
+- PRD v0.8 and architecture are approved by @cjschaab as product owner and technical lead; the deletion-ledger protocol, recovery details, hosting context, and later cross-functional policies still need owner decisions.
 - Missing measurable service targets prevent objective performance and reliability readiness decisions.
 
 ### Selected Product Defaults and Cross-Functional Recommendations
 
-Per requester direction, the product defaults below are selected for this draft. This is not formal stakeholder approval. Recommendations owned by security, operations, analytics/privacy, accessibility, and the technical lead remain pending their owners' review.
+The product defaults below are approved in PRD v0.8 by product owner @cjschaab. Recommendations owned by security, operations, analytics/privacy, accessibility, and the technical lead remain pending their owners' review.
 
 | Question | Recommended answer | Rationale and confirmation needed |
 | --- | --- | --- |
-| Who is the primary user, and is a workspace personal, shared, or both? | Selected for this draft: one owner per personal workspace; an owner may have multiple workspaces; paired devices represent the same owner; no cross-person sharing, roles, or team collaboration in v1. | Selected per requester direction; formal product approval and security confirmation of same-owner device access remain pending. |
-| What is the minimum task data model? | Selected for this draft: plain-text title of 1-200 characters after trimming whitespace; required list; incomplete by default; optional, clearable date-only due date; past due dates allowed; no notes or extra fields in v1. | Selected per requester direction; formal product approval of fields and validation remains pending. The 200-character limit is not a repository constraint. |
-| Can users create, rename, or reorder lists? Is list deletion out of scope? | Selected for this draft: keep the default `Tasks` list permanent and non-renamable; allow creating and renaming user lists; no deletion or manual reordering; show `Tasks` first and user lists in creation order; moving tasks is explicit. | Selected per requester direction; formal product approval remains pending. List deletion is excluded by current frontend/database guidance unless product policy changes. |
+| Who is the primary user, and is a workspace personal, shared, or both? | Approved in PRD v0.8: one owner per personal workspace; an owner may have multiple workspaces; paired devices represent that owner; no cross-person sharing, roles, or team collaboration in v1. | Product approval recorded from @cjschaab on 2026-11-13. Security approval of the later pairing/recovery implementation remains separately gated. |
+| What is the minimum task data model? | Approved in PRD v0.8: plain-text title of 1-200 characters after trimming whitespace; required list; incomplete by default; optional, clearable date-only due date; past due dates allowed; no notes or extra fields in v1. | Product approval recorded from @cjschaab on 2026-11-13. The 200-character limit is not a repository constraint. |
+| Can users create, rename, or reorder lists? Is list deletion out of scope? | Approved in PRD v0.8: keep the default `Tasks` list permanent and non-renamable; allow creating and renaming user lists; no deletion or manual reordering; show `Tasks` first and user lists in creation order; moving tasks is explicit. | Product approval recorded from @cjschaab on 2026-11-13. List deletion is excluded by current frontend/database guidance unless product policy changes. |
 | What are the pairing, recovery, revocation, and multi-user rules? | Retain same-owner paired devices and no multi-user access in v1. Draft interaction: show a single-use pairing code on an authorized device and enter it on the new device; propose a 10-minute expiry. For full device loss, establish a recovery secret at setup, rotate it on recovery, and revoke existing device credentials. | Requester selected the code-entry interaction for the draft. Security approval remains required for issuer eligibility, expiry, recovery proof/secret handling, rate limits, and revocation scope. Never place grants in URLs or logs. |
-| What workspace time zone should be used? | Draft default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes. | Requester selected this default for the draft; product owner must approve the default, change behavior, and overdue-date semantics. |
+| What workspace time zone should be used? | Approved default: capture the browser's IANA time zone at workspace creation, show it to the user, and allow changes. | Approved in PRD v0.8 by product owner @cjschaab. |
 | What are the activation, success, measurement, and analytics targets? | Selected for this draft: track first task within 24 hours and valid task-create success; collect pilot baselines before setting numeric targets; keep zero cross-workspace disclosures as a security gate; report completion descriptively; use aggregate counts without task content, credentials, or stable identifiers. | Product direction selected per requester instruction. Product/analytics/privacy owners must approve measurement methods, pilot duration, data retention, and event handling. |
-| What service, accessibility, and support targets apply? | Keep the Section 7 performance, availability, recovery, accessibility, and support numbers provisional. Measure pilot baselines before setting numeric service targets; set rate limits after threat modeling and load testing. | Requester selected baseline-first for the draft. Operations, security, and accessibility owners must validate feasibility, scope, and support coverage before pilot. |
-| What architecture and hosting direction should be used? | Requester-approved direction: one modular ASP.NET Core deployment serving React assets, with PostgreSQL as authoritative; remain provider-neutral until hosting constraints are known. | Approval by @cjschaab of [Task Manager Architecture](task-manager-architecture.md) is recorded for 2026-11-13; organizational approval role is unspecified. Confirm whether additional architecture sign-off is required. Product requirements and operations/security choices remain pending. |
+| What service, accessibility, and support targets apply? | Keep the Section 7 performance, availability, recovery, accessibility, and support numbers provisional. Measure pilot baselines before setting numeric service targets. | Operations, security, and accessibility owners must validate feasibility, scope, and support coverage before pilot. Workspace-creation limits are approved; other endpoint limits remain gated. |
+| What architecture and hosting direction should be used? | Approved direction: one modular ASP.NET Core deployment serving React assets, with PostgreSQL as authoritative; remain provider-neutral until hosting constraints are known. | Architecture approval by technical lead @cjschaab is recorded for 2026-11-13. Hosting implementation details remain TBD; later operations/security choices remain separately gated. |
 
 ### Decisions Still Requiring Confirmation
 
-- Product owner: formally approve the selected draft defaults for workspace ownership, task fields/validation, overdue-date semantics and browser-zone default/change behavior, default-list naming/order, and v1 list operations.
-- Security owner: approve the manual pairing-code interaction, issuer eligibility, expiry, recovery-secret issuance/rotation, device revocation, and numeric rate limits.
+- Security owner: approve pairing issuer eligibility, grant expiry, recovery-secret issuance/rotation and proof, and pairing/recovery rate limits before VS-03. VS-01 bootstrap, credential expiry/revocation, and workspace-creation limits are approved.
 - Product and analytics owners: approve candidate metric targets, measurement window, and privacy-preserving event collection.
 - Operations and accessibility owners: validate hosting constraints, restore objectives and deletion-ledger protocol, pilot support coverage, and accessibility conformance scope. Keep service targets baseline-first until pilot evidence is reviewed.
-- Technical lead: confirm the requester-approved architecture is consistent with stack guidance and define the deletion-ledger consistency protocol. Confirm whether any additional organizational architecture sign-off is required.
+- Technical lead: define the deletion-ledger consistency protocol. Architecture/PRD alignment and the initial reproducible baseline are recorded in the roadmap.
 
 ## 10. Acceptance and Approval
 
-The requester stated approval of PRD v0.8 as-is on 2026-11-13. The organizational product-approval role was not supplied, so this record does not establish that the authorized product owner approved it. The requester also selected draft defaults for timezone handling, pairing interaction, deletion/restore guarantees, provider-neutral hosting, and baseline-first service targets. Before pilot planning, security, operations, analytics/privacy, and accessibility owners must confirm their respective recommendations, and the technical lead must confirm architecture consistency and define the deletion-ledger protocol. Numeric activation and task-capture targets should be considered only after pilot baselines are reviewed. Confirm the approval authority before treating PRD approval as a completed G0 gate.
+On 2026-11-13, @cjschaab confirmed product-owner authority and approved PRD v0.8 as-is. The technical lead confirmed architecture alignment; security separately approved the VS-01 bootstrap, credential lifecycle, and workspace-creation limits. Pairing/recovery, deletion-ledger, operations, analytics/privacy, accessibility, and pilot decisions remain gated with their accountable owners. Numeric activation and task-capture targets should be considered only after pilot baselines are reviewed.
 
 Implementation should not begin from this document alone. After review, approved requirements should be traced into design and delivery slices with verification evidence.
 
@@ -236,11 +240,11 @@ Implementation should not begin from this document alone. After review, approved
 | 2026-11-13 | Draft v0.6 records the user's selected v1 product defaults. | Formal product approval and cross-functional owner decisions remain pending. |
 | 2026-11-13 | Draft v0.7 records requester-selected timezone and pairing interaction defaults, deletion/restore guarantee, provider-neutral hosting, and baseline-first service targets. | These are draft dispositions only. Product, security, operations, accessibility, privacy, and technical approvals remain pending. |
 | 2026-11-13 | Draft v0.8 records the requester's approval of the architecture specification. | Approval was recorded as stated by the requester; organizational approval role is unspecified. |
-| 2026-11-13 | The requester stated approval of PRD v0.8 as-is. | The organizational product-approval role is unspecified; confirm authority before treating the approval gate as complete. |
+| 2026-11-13 | @cjschaab confirmed product-owner authority and approved PRD v0.8 as-is. | Recorded as the accountable product approval for G0. |
 
 ## 12. Business Rule Analysis (Draft)
 
-This analysis is based only on the PRD and the linked repository instructions. “Repository constraint” means a rule stated by those instructions; it does not prove that the behavior is implemented. “PRD proposal” means a product choice in this draft that still needs stakeholder approval. These candidate rules are not new approvals.
+This analysis is based only on the PRD and the linked repository instructions. “Repository constraint” means a rule stated by those instructions; it does not prove that the behavior is implemented. Candidate rules distinguish approved product decisions from unresolved implementation and later-gate policies.
 
 ### 12.1 Candidate Business Rules
 
@@ -264,7 +268,7 @@ This analysis is based only on the PRD and the linked repository instructions. �
 
 | Actor | Trigger | Expected outcome | Exceptions / unresolved behavior | Evidence |
 | --- | --- | --- | --- | --- |
-| Workspace creator | Requests workspace creation. | Workspace and default `Tasks` list are available together. | If either creation fails, neither is presented as a successful partial result. Eligibility and workspace limits are [NEEDS DECISION]. | BR-01; [PostgreSQL instructions](.github/instructions/postgresql.instructions.md), Workspace Isolation and Data Integrity; FR-01. |
+| Workspace creator | Requests workspace creation. | Any visitor may create an isolated workspace; the committed workspace and default `Tasks` list are available together. | If either creation fails, neither is presented as a successful partial result. Approved abuse limits are 5 attempts per source IP per hour and 20 per day; they do not grant authorization. | BR-01; [PostgreSQL instructions](.github/instructions/postgresql.instructions.md), Workspace Isolation and Data Integrity; FR-01. |
 | Authorized workspace user | Reads or changes a task or list. | Request is evaluated within the authenticated workspace. | Expired/revoked credential or cross-workspace request is denied without revealing resource existence. | BR-02; [ASP.NET Core instructions](.github/instructions/aspnet-core.instructions.md), Access and Security; FR-02. |
 | Authorized workspace user | Creates, edits, completes, deletes, or moves a task. | Valid change is shown after server confirmation. | Validation errors preserve user input; stale versions produce a conflict and preserve the draft. | BR-03-BR-06; FR-03-FR-07, FR-11. |
 | Authorized workspace user | Searches by title. | Matching tasks in the authorized workspace are returned. | Empty-query behavior, maximum query length, and result ordering are [NEEDS DECISION]. | BR-08; [PostgreSQL instructions](.github/instructions/postgresql.instructions.md), Types, Queries, and Transactions; FR-09. |
@@ -277,37 +281,37 @@ This analysis is based only on the PRD and the linked repository instructions. �
 
 **Facts stated in the supplied documents**
 
-- The documents select C#/ASP.NET Core, React/TypeScript, and PostgreSQL, while leaving versions and several implementation choices unselected. This records document content, not verified deployed behavior.
+- The approved baseline selects .NET SDK 10.0.403 / ASP.NET Core 10, EF Core 10.0.15 with Npgsql provider 10.0.3, PostgreSQL 18, React 19.3.1, strict TypeScript 7.0.2, Vite 8.3.8, and Node.js 26.13.1. This records verified build/test tooling, not deployed product behavior.
 - The instructions state workspace scoping, a default `Tasks` list, date-only due dates, atomic version checks, retry safety, pairing/revocation safeguards, and restore-time deletion-ledger handling.
-- The PRD is a draft; its proposed answers and pilot targets are not approved. The architecture specification has requester approval recorded, but the requester's organizational approval role is unspecified.
+- PRD v0.8 is approved by product owner @cjschaab. Candidate pilot targets remain provisional; the technical lead confirmed the architecture aligns with v0.8.
 
 **Analyst interpretations**
 
-- Pairing multiple devices is selected for the draft as same-owner access with a manually entered one-time code. Security approval is still needed for issuer eligibility and credential/recovery policy.
+- Pairing multiple devices is selected in PRD v0.8 as same-owner access with a manually entered one-time code. Security approval is still needed for issuer eligibility, grant expiry, and recovery policy.
 - Explicit deletion and backup retention are paired with a draft guarantee: acknowledged deletions must be durable and applied before restored data is served. The technical write/reconciliation protocol remains open.
-- The individual-workspace model, task fields, due-date semantics, and list behavior are selected for this draft per requester direction, but are not formally approved. Recovery details and numeric service targets remain proposals.
+- The individual-workspace model, task fields, due-date semantics, and list behavior are approved in PRD v0.8. Recovery details, later-slice security policies, and numeric service targets remain gated or provisional.
 
 ### Selected Product Defaults and Cross-Functional Recommendations
 
-Product defaults below were selected for this draft per requester direction; formal product approval remains pending. Recommendations assigned to other owners are not approved decisions.
+Product defaults below were approved in PRD v0.8 by product owner @cjschaab. Recommendations assigned to other owners remain unapproved decisions.
 
 | Topic | Recommended v1 answer | Owner / remaining decision |
 | --- | --- | --- |
-| Workspace model | Make each workspace personal to one owner. Allow an owner to create more than one workspace. Paired devices represent that same owner; do not support cross-person sharing, invitations, or roles in v1. | Selected for this draft per requester direction; formal product approval pending. Security owner must confirm pairing cannot grant unintended cross-person access. |
-| Task fields and validation | Use a required plain-text title of 1-200 characters after trimming whitespace, a required list, a complete/incomplete state defaulting to incomplete, and an optional date-only due date. Exclude descriptions and other fields in v1. Accept past due dates. | Selected for this draft per requester direction; formal product approval of fields, title limit, and validation pending. |
-| Due-date meaning | A task is overdue only when it is incomplete and its due date is earlier than the current calendar date in the workspace time zone. A completed task is not overdue; changing completion does not clear its due date. Do not infer a time-of-day or notification from a date-only value. Draft time-zone default: capture the browser's IANA zone at workspace creation, show it, and allow changes. | Requester selected these defaults for the draft; formal product approval remains pending. |
-| Lists | Keep the default `Tasks` list permanent and not renameable. Allow creating and renaming user lists; do not allow deletion or manual reordering in v1. Show `Tasks` first and user lists in creation order. Renaming preserves task membership; moving a task requires an explicit user action. | Selected for this draft per requester direction; formal product approval pending. List deletion remains excluded by repository guidance unless product policy changes. |
-| Pairing and recovery | Show a single-use pairing code on an authorized device and enter it on a new device; propose a 10-minute expiry. For full device loss, issue a high-entropy recovery secret at setup, show it once, store only a verifier, and on successful use rotate the secret and revoke existing device credentials. Do not place grants in URLs or logs. | Requester selected the code-entry interaction for the draft. Security owner: [NEEDS DECISION] approve issuer rules, expiry, recovery proof, secret handling, and revocation scope. |
+| Workspace model | Make each workspace personal to one owner. Allow an owner to create more than one workspace. Paired devices represent that same owner; do not support cross-person sharing, invitations, or roles in v1. | Approved in PRD v0.8. Security approval of the later pairing/recovery implementation remains gated. |
+| Task fields and validation | Use a required plain-text title of 1-200 characters after trimming whitespace, a required list, a complete/incomplete state defaulting to incomplete, and an optional date-only due date. Exclude descriptions and other fields in v1. Accept past due dates. | Approved in PRD v0.8; the 200-character limit is a product rule, not a repository constraint. |
+| Due-date meaning | A task is overdue only when it is incomplete and its due date is earlier than the current calendar date in the workspace time zone. A completed task is not overdue; changing completion does not clear its due date. Do not infer a time-of-day or notification from a date-only value. Default time zone: capture the browser's IANA zone at workspace creation, show it, and allow changes. | Approved in PRD v0.8. |
+| Lists | Keep the default `Tasks` list permanent and not renameable. Allow creating and renaming user lists; do not allow deletion or manual reordering in v1. Show `Tasks` first and user lists in creation order. Renaming preserves task membership; moving a task requires an explicit user action. | Approved in PRD v0.8. List deletion remains excluded by repository guidance unless product policy changes. |
+| Pairing and recovery | Show a single-use pairing code on an authorized device and enter it on a new device; propose a 10-minute expiry. For full device loss, issue a high-entropy recovery secret at setup, show it once, store only a verifier, and on successful use rotate the secret and revoke existing device credentials. Do not place grants in URLs or logs. | Pairing/recovery is a later gate: security owner must approve issuer eligibility, grant expiry, recovery proof, secret handling, and revocation scope before VS-03. VS-01 credential expiry/revocation and workspace-creation limits are approved. |
 | Metrics and analytics | Track first task created within 24 hours as activation and successful valid task-create requests as capture reliability. Collect baselines during the pilot; do not set numeric activation or capture targets until those baselines are reviewed. Keep zero cross-workspace disclosures as a security acceptance gate, not a product KPI; report completion rate descriptively. Use aggregate workflow counts only; do not collect task content, credentials, or stable user identifiers for analytics. | Product/analytics/privacy owners: [NEEDS DECISION] approve definitions, denominator, cohort method, pilot duration, data retention, and analytics handling. Numeric activation and capture targets require pilot evidence. |
-| Service and support targets | Keep Section 7's performance, availability, recovery, accessibility, and support values provisional. Measure pilot baselines before setting numeric service targets. Set numeric rate limits after threat modeling and load testing. | Requester selected baseline-first for the draft; operations/security/accessibility owners: [NEEDS DECISION] validate feasibility, load assumptions, recovery tests, coverage hours/time zone, and conformance scope. |
-| Architecture and hosting | The requester approved the architecture specification on 2026-11-13: one modular ASP.NET Core application serving React assets, with PostgreSQL authoritative and provider-neutral hosting. See [Task Manager Architecture](task-manager-architecture.md). | Approval is recorded as stated by the requester; organizational approval role is unspecified. Product requirements and security/operations decisions remain pending; hosting implementation details remain TBD. |
+| Service and support targets | Keep Section 7's performance, availability, recovery, accessibility, and support values provisional. Measure pilot baselines before setting numeric service targets. | Operations/security/accessibility owners: [NEEDS DECISION] validate feasibility, load assumptions, recovery tests, coverage hours/time zone, and conformance scope. VS-01 workspace-creation limits are approved; other endpoint limits remain before their applicable gates. |
+| Architecture and hosting | Approved direction: one modular ASP.NET Core application serving React assets, with PostgreSQL authoritative and provider-neutral hosting. See [Task Manager Architecture](task-manager-architecture.md). | Approved by product owner and technical lead @cjschaab. Hosting implementation details remain TBD; later security/operations decisions remain gated. |
 
 ### 12.4 Contradictions and Gaps
 
 No direct business-rule contradiction is established by the supplied context. The following tensions and gaps need reconciliation:
 
-- The PRD recommends personal workspaces and no collaboration, but device pairing guidance does not establish whether devices belong to one person or multiple people.
+- PRD v0.8 establishes that workspaces belong to one owner and paired devices represent that same owner. Pairing issuer, recovery, and grant details remain open for VS-03.
 - The PRD proposes task deletion while the instructions require deletion-ledger and backup handling. The draft now requires durable acknowledgement and restore reconciliation; the technical protocol and backup policy still need operations review.
-- Due dates are date-only and the draft proposes a browser-zone default. Product approval of the default and date boundaries remains necessary.
-- The PRD proposes numeric service targets. These are not repository constraints; rate-limit values specifically remain open in the instructions, and no operating evidence validates the other targets.
-- Architecture approval is recorded from the requester. The technical lead must confirm consistency with repository guidance; the PRD and other owner decisions remain unapproved.
+- Due dates are date-only and the approved PRD selects the browser-zone default and date boundaries.
+- The PRD proposes numeric pilot service targets. These are not repository constraints; only VS-01 workspace-creation thresholds are approved, and no operating evidence validates the other targets.
+- The product owner approved PRD v0.8 and the technical lead confirmed architecture alignment. VS-01 bootstrap, credential lifecycle, and workspace-creation limits are approved; pairing/recovery, deletion-ledger, pilot service, and other cross-functional decisions remain gated.

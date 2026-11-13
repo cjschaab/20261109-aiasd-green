@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+web/node_modules/
+src/TaskManager.Api/wwwroot/
+web/playwright-report/
+web/test-results/
+tmp/task-manager-vite-scaffold/

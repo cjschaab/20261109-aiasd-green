@@ -32,4 +32,4 @@ The [Task Manager Architecture](task-manager-architecture.md) records approval b
 
 The [Task Manager Implementation Roadmap](task-manager-implementation-roadmap.md) sequences the proposed work into conditional, testable vertical slices. It does not authorize implementation.
 
-The [VS-01 workspace creation specification](specs/task-manager/vs-01-create-workspace.spec.md) is ready for review; implementation remains G0-blocked pending approval-authority confirmation and the technical baseline.
+The [VS-01 workspace creation specification](specs/task-manager/vs-01-create-workspace.spec.md) records the accountable owner's approval and selected credential, rate-limit, runtime, and test-tool decisions. G0 remains open until the repository has a reproducible build/test baseline and VS-01 is approved for implementation.

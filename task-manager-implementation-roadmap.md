@@ -22,12 +22,17 @@ revisions:
     date: "2026-11-13"
     change: "Recorded requester approval statements, technical architecture alignment, the selected application repository, and the first-device bootstrap policy."
     ai_log: "ai-logs/2026/11/13/40889748-90ba-4e66-aa9a-b8c8df7800b0/conversation.md"
+  - chat_id: "e2a33dc9-d9fb-45d7-8e09-bb2d21c63c00"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded the accountable owner's authority and approval, credential lifecycle and creation limits, and selected runtime and test tooling; G0 remains open pending a reproducible repository baseline and VS-01 approval."
+    ai_log: "ai-logs/2026/11/13/e2a33dc9-d9fb-45d7-8e09-bb2d21c63c00/conversation.md"
 ---
 
 # Task Manager Implementation Roadmap
 
-**Status:** Draft, conditional on PRD and cross-functional approvals; this plan does not authorize implementation  
-**Version:** 0.2  
+**Status:** Draft; G0 owner decisions are recorded, but G0 remains open and this plan does not authorize implementation
+**Version:** 0.3
 **Date:** 2026-11-13  
 **Planning owner:** TBD  
 **Delivery dates, effort, budget, and named slice owners:** Not estimated; no team capacity or delivery constraints were supplied.
@@ -38,20 +43,20 @@ This plan sequences the proposed v1 task-manager scope as end-to-end vertical sl
 
 Sources:
 
-- [Task Manager Product Requirements Specification](task-manager-requirements.md), v0.8. The requester stated approval as-is on 2026-11-13; the organizational product-approval role is unspecified, so formal G0 approval is not verified. It defines candidate functional requirements FR-01 through FR-13 and quality requirements QR-01 through QR-06.
-- [Task Manager Architecture](task-manager-architecture.md), v0.2, approved by the requester on 2026-11-13; organizational approval role is unspecified. It selects one ASP.NET Core modular application serving React assets, PostgreSQL as the authoritative application store, and a separate protected deletion ledger. It does not authorize implementation by itself.
-- Repository instructions select C#/ASP.NET Core, React/TypeScript, and PostgreSQL while leaving versions, endpoint style, hosting provider, data-access, migration, and test libraries unselected.
+- [Task Manager Product Requirements Specification](task-manager-requirements.md), v0.8. On 2026-11-13, @cjschaab confirmed they are the product owner and approved it as-is. The PRD defines functional requirements FR-01 through FR-13 and quality requirements QR-01 through QR-06.
+- [Task Manager Architecture](task-manager-architecture.md), v0.2, approved by the requester on 2026-11-13. The technical lead confirmed architecture alignment with PRD v0.8. It selects one ASP.NET Core modular application serving React assets, PostgreSQL as the authoritative application store, and a separate protected deletion ledger. It does not authorize implementation by itself.
+- Repository instructions select C#/ASP.NET Core, React/TypeScript, and PostgreSQL. The technical lead has selected .NET 10 LTS / ASP.NET Core 10, PostgreSQL 18, EF Core 10 with Npgsql, React 19 with strict TypeScript and Vite, and Node.js 26 LTS. Selected test tooling is xUnit, `WebApplicationFactory`, PostgreSQL-backed integration tests using a disposable database/test container, Vitest with React Testing Library, and Playwright.
 
-The architecture document names PRD v0.6 as its product basis, while the current PRD is v0.8. The technical lead confirmed on 2026-11-13 that the architecture remains aligned with PRD v0.8. The requester selected this repository as the application target, but runtime and build/test tooling remain unselected; no application or test source is present.
+The architecture document names PRD v0.6 as its product basis, while the current PRD is v0.8; the technical lead confirmed alignment with v0.8 on 2026-11-13. @cjschaab confirmed they are the product owner, security owner, and technical lead and approved the recorded PRD and VS-01 security recommendations. This repository is the application target. Runtime and test tooling are selected, but no application or test source, manifests, pinned versions, or reproducible commands are present.
 
 ## 2. Planning Assumptions and Readiness Decisions
 
-- The requester stated approval of PRD v0.8 as-is; confirm the requester's organizational product-approval role before treating the G0 approval gate as complete.
+- The requester confirmed they are the product owner and approved PRD v0.8 as-is. The product-approval role for G0 is recorded as confirmed by the requester.
 - No estimates, calendar dates, delivery commitments, staffing, hosting selection, or numeric performance commitments are inferred.
 - Hosting can remain provider-neutral during early slices, but a provider and deployment details are required before pilot deployment.
-- Security, operations, analytics/privacy, accessibility, and product approval gates remain owned by their designated stakeholders.
+- The security owner approved VS-01's account-free workspace bootstrap, initial credential lifecycle, and per-IP creation limits. Pairing/recovery and later operations, analytics/privacy, and accessibility decisions remain gated with their designated owners.
 - The independent deletion ledger and the requirement to make acknowledged deletions durable before reporting success are high-risk dependencies. Their cross-store write, retry, retention, and restore-reconciliation protocol must be designed and tested before the deletion/restore slice.
-- A single-user workspace and manually entered pairing code are draft product choices. Security approval of issuer eligibility, expiry, recovery proof, secret handling, revocation scope, and numeric rate limits remains necessary.
+- A single-user workspace and manually entered pairing code are draft product choices. The security owner approved account-free VS-01 bootstrap; pairing issuer eligibility, grant expiry, recovery proof, and related later-slice policies remain to be approved.
 
 ## 3. Readiness Gate
 
@@ -59,17 +64,18 @@ The architecture document names PRD v0.6 as its product basis, while the current
 
 Required before the first product slice starts:
 
-- Confirm that the requester's stated approval of PRD v0.8 satisfies the authorized product-owner gate for scope, task/list rules, workspace/date behavior, and baseline-first measurement.
-- The technical lead has confirmed architecture alignment and the requester selected this repository as the application target; the technical lead must still select supported runtime/tooling and establish a reproducible build/test baseline for the first slice.
-- Confirm that the requester's stated security approval satisfies the security-owner gate for the initial-device policy. The approved draft policy is that any visitor may create an isolated personal workspace without an existing account or invitation, and the creating browser receives the initial device credential after successful creation. Confirm credential lifecycle and numeric rate limits before their applicable release gates.
+- Product owner @cjschaab confirmed approval of PRD v0.8 as-is on 2026-11-13; this records the accountable product approval for G0.
+- The technical lead confirmed architecture alignment with PRD v0.8 and selected this repository as the application target. Supported runtime and data-access, migration, and test tooling are selected as recorded above; a reproducible repository build/test baseline is still required.
+- Security owner @cjschaab approved the VS-01 bootstrap policy: any visitor may create an isolated personal workspace without an account or invitation, and the creating browser receives the initial device credential after the workspace/default-list commit. Initial credentials expire after 30 days of inactivity or 180 days after issuance, whichever comes first; activity extends only the inactivity period, and logout or reported compromise revokes that device immediately. Enforce expiry only when recovery is available to prevent stranding a workspace. Limit workspace creation to 5 attempts per source IP per hour and 20 per source IP per day; return retry guidance and challenge repeated abuse. These IP limits are abuse controls, not authorization.
+- Approve the VS-01 specification and establish reproducible build/test commands, pinned versions, safe fixtures, and a PostgreSQL-backed integration-test setup before implementation begins.
 
 Required before dependent slices or pilot, not necessarily before all feature work:
 
-- Before device pairing: security approval of issuer, grant expiry, recovery, revocation, and rate-limit policy.
+- Before device pairing: security approval of pairing issuer, grant expiry, recovery proof, and pairing/recovery rate-limit policy.
 - Before task deletion/restore: technical and operations approval of ledger consistency, durability, retry, failure, retention, and restore protocol.
 - Before analytics instrumentation or pilot: product, analytics/privacy, operations, and accessibility owners approve measurement/data handling and pilot acceptance criteria.
 
-**Exit evidence:** decisions are recorded with owners; the PRD approval status and architecture/PRD version relationship are explicit; the first-slice build/test baseline is reproducible. If a required decision remains open, defer only the affected slice and record the blocker; do not silently substitute a policy.
+**Exit evidence:** decisions are recorded with owners; the PRD approval status and architecture/PRD version relationship are explicit; VS-01 is approved; the selected runtime/tooling has pinned versions and a reproducible build/test baseline. G0 remains open until all of this evidence is present. If a later-gate decision remains open, defer only the affected slice and record the blocker; do not silently substitute a policy.
 
 ## 4. Dependency-Driven Vertical Slices
 
@@ -117,7 +123,7 @@ flowchart TD
 
 | Order | Slice and user value | Traceability | Dependencies | Exit evidence |
 | --- | --- | --- | --- | --- |
-| VS-01 | **Create a workspace and enter it on the first authorized device.** A user can create an isolated workspace with its default `Tasks` list and reach the workspace through an approved initial-device flow. | FR-01, FR-02; QR-02 | G0; initial device/bootstrap flow approved. | Workspace and default list creation are atomic; authorization is derived from the verified device credential; cross-workspace access tests disclose no resource existence; failure leaves no successful partial workspace. |
+| VS-01 | **Create a workspace and enter it on the first authorized device.** A user can create an isolated workspace with its default `Tasks` list and reach the workspace through an approved initial-device flow. | FR-01, FR-02; QR-02 | G0; initial device/bootstrap flow approved. | Workspace and default list creation are atomic; authorization is derived from the verified device credential; cross-workspace access tests disclose no resource existence; failure leaves no successful partial workspace; approved credential lifecycle and per-IP workspace-creation limits are tested. |
 | VS-02 | **Capture and view tasks.** A user can create a task in a list and distinguish task results, an empty list, and a failed load. | FR-03, FR-04 | VS-01; approved title/list validation. | Valid title and same-workspace list are required; task appears only after server confirmation; invalid/cross-workspace references create nothing; automated and browser tests cover empty/loading/error states. |
 | VS-03 | **Pair and recover a device.** An authorized device presents a one-time code and a new device redeems it; the user can recover workspace access through the approved recovery flow. | FR-12; QR-03 | VS-01; security-approved pairing/recovery decisions. | Grant expiry/replay/issuer authorization and credential expiry/revocation are tested; secrets do not appear in URLs, logs, analytics, or browser storage; recovery rotation and revocation tests pass. |
 | VS-04 | **Edit and complete tasks without losing newer work.** A user can edit task fields and change completion state; concurrent stale writes are reported as conflicts with the user's draft preserved. | FR-05, FR-11; QR-04 | VS-02; VS-03 for end-to-end two-device acceptance. | Version check and write are atomic; retries do not silently duplicate non-idempotent creates; stale updates cannot overwrite or recreate a removed task; client retains drafts and reports server-confirmed outcomes. |
@@ -144,11 +150,10 @@ Every slice includes its client workflow, typed API contract, authorization and 
 
 | Risk | Impact | Mitigation / gate |
 | --- | --- | --- |
-| PRD v0.8 remains unapproved. | Work may implement a scope the product owner has not accepted. | Keep G0 blocking feature slices; retain traceability and update the plan after approval. |
 | Architecture product basis cites PRD v0.6. | Changes in v0.7-v0.8, including time-zone, pairing, and deletion/restore decisions, may not be reflected in the approved design. | Technical lead performs a version-diff review and records whether architecture changes are needed before G0 exits. |
-| No application source or build/test baseline is present in the workspace. | Tooling, integration points, and implementation readiness are unknown. | Locate/create the authorized application repository and establish one reproducible build/test check in VS-01; do not assume project layout or libraries. |
+| No application source or reproducible build/test baseline is present in the repository. | Tooling integration, commands, and implementation readiness are not yet demonstrated. | Establish a repository baseline with pinned versions and a reproducible build/test check using the selected tools; do not add product behavior before G0 exits. |
 | Deletion acknowledgment spans PostgreSQL and an independent ledger. | Partial failure could acknowledge a deletion that restore later loses. | Design write ordering, idempotency, ledger retention, restore reconciliation, and failure semantics; prove with fault-injection/restore tests before VS-09 exits. |
-| Pairing and recovery rules are security-sensitive but not fully approved. | Unauthorized workspace access or permanent user lockout. | Security owner approves grant issuance, expiry, secret lifecycle, revocation, abuse limits, and recovery tests before VS-03. |
+| Pairing and recovery rules are security-sensitive but not fully approved. | Unauthorized workspace access or permanent user lockout. | Security owner approves pairing-grant issuance/expiry, recovery proof, and pairing/recovery abuse limits before VS-03; test the already approved VS-01 credential lifecycle separately. |
 | Numeric service targets lack workload evidence. | Premature commitments or under-sized deployment. | Measure a representative pilot first; keep p95, availability, and recovery numbers provisional until Operations accepts evidence. |
 | Cross-slice concurrency and team ownership are unknown. | Parallel work could conflict on shared contracts or schema. | Plan sequentially by default. Consider parallel work only after owners, shared API/data contracts, and independent testing are confirmed. |
 
@@ -164,4 +169,4 @@ The project is ready for pilot only when:
 - Pilot analytics are privacy-approved; activation and task-capture baselines are measured before numeric outcome targets are set.
 - Operations reviews measured workload and explicitly approves or revises performance, availability, and recovery targets.
 
-Immediate decisions: approve PRD v0.8; reconcile the architecture's PRD v0.6 reference; identify the application repository and technical lead; assign owners for G0 and each gated decision. No dates or effort estimates should be committed until team capacity and a working codebase are known.
+Immediate decisions: establish the selected runtime/tooling baseline and its reproducible commands; review and approve the VS-01 specification; keep the numeric service-wide capacity limit for workspace creation as a pilot-readiness decision based on measured capacity. G0 remains open until the baseline and specification approval are evidenced. No dates or effort estimates should be committed until team capacity and a working codebase are known.

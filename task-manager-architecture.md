@@ -25,19 +25,24 @@ revisions:
     date: "2026-11-13"
     change: "Recorded requester approval of the architecture specification; product and cross-functional approvals remain separate."
     ai_log: "ai-logs/2026/11/13/55f7f458-0ae1-4ce1-ad18-0e307945667d/conversation.md"
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded the approved PRD v0.8 basis, pinned stack, and reproducible G0 baseline evidence."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
 # Task Manager Architecture
 
-**Status:** Approved by @cjschaab (requester) on 2026-11-13; product and cross-functional approvals remain pending  
-**Version:** 0.2  
+**Status:** Approved by @cjschaab (product owner and technical lead) on 2026-11-13; G0 remains open pending VS-01 specification approval  
+**Version:** 0.4  
 **Date:** 2026-11-13  
-**Approval record:** Approved by @cjschaab; organizational approval role was not specified. This approves the architecture specification only, not the PRD or implementation readiness.  
-**Product basis:** [Task Manager Product Requirements Specification](task-manager-requirements.md), version 0.6, draft and unapproved.
+**Approval record:** @cjschaab confirmed product-owner, security-owner, and technical-lead roles and approved PRD v0.8 and the architecture direction on 2026-11-13. This architecture approval does not approve later-slice policies or substitute for vertical-slice specifications.
+**Product basis:** [Task Manager Product Requirements Specification](task-manager-requirements.md), version 0.8, approved by product owner @cjschaab on 2026-11-13.
 
 ## Goals and constraints
 
-This design records the architecture approved by the requester and remains grounded in the draft PRD and repository guidance. Product requirements and cross-functional policy decisions remain pending their accountable owners.
+This design records the architecture approved by the technical lead and is grounded in approved PRD v0.8 and repository guidance. Product decisions for VS-01 are approved; later-slice and pilot policies remain pending their accountable owners.
 
 ### Goals
 
@@ -47,9 +52,9 @@ This design records the architecture approved by the requester and remains groun
 
 ### Known constraints and assumptions
 
-- Repository guidance selects C#, ASP.NET Core, React, TypeScript, and PostgreSQL. Exact versions, endpoint style, hosting, database access, migration, and test libraries remain unselected.
+- The pinned baseline selects .NET SDK 10.0.403 / ASP.NET Core 10, EF Core 10.0.15, Npgsql EF Core provider 10.0.3, PostgreSQL 18, React 19.3.1, TypeScript 7.0.2, Vite 8.3.8, and Node.js 26.13.1. Backend tests use xUnit 2.9.3 and `WebApplicationFactory`; PostgreSQL tests use a disposable PostgreSQL 18.7 container; frontend tests use Vitest 5.1.0, React Testing Library 16.3.3, and Playwright 1.65.0. Exact package dependencies are lockfile-pinned.
 - Backend guidance specifies one modular web application/API. This draft keeps one backend deployment and recommends serving the React assets from it.
-- The PRD is a draft. Its personal workspace model, task fields, candidate targets, and other proposed behaviors still need the approvals listed in that document.
+- The PRD v0.8 product scope and defaults are approved; candidate pilot service targets and later-slice security/operations decisions remain subject to their stated gates.
 - No application code, deployed system, workload measurements, budget, or hosting environment was available for this design.
 - The proposed single-deployable layout is an architectural recommendation. It does not select a cloud provider, container runtime, database hosting model, or operations owner.
 
@@ -260,9 +265,9 @@ Instrument request latency and outcomes, authorization denials, version conflict
 
 | Area | Recommendation / status |
 | --- | --- |
-| Backend | C# and ASP.NET Core modular application/API are selected by repository guidance. Framework version, controllers vs. minimal APIs, validation library, and test framework are TBD. |
-| Frontend | React and TypeScript are selected by repository guidance. Preserve strict typing, accessible semantic controls, and a small typed API boundary. Versions and build/test tooling are TBD. |
-| Database | PostgreSQL is the authoritative store by repository guidance. Provider/version, data-access library, and migration tooling are TBD. |
+| Backend | .NET 10 / ASP.NET Core 10; .NET SDK 10.0.403; EF Core 10.0.15 with Npgsql provider 10.0.3; local `dotnet-ef` 10.0.15. Endpoint style and validation library remain implementation choices. |
+| Frontend | React 19.3.1, TypeScript 7.0.2 with strict checking, Vite 8.3.8, and Node.js 26.13.1. Vitest 5.1.0, React Testing Library 16.3.3, and Playwright 1.65.0 provide the selected test baseline. |
+| Database | PostgreSQL 18 is authoritative. The disposable baseline service is pinned by image digest and reports 18.7. Data access and migrations use EF Core/Npgsql as specified above. |
 | Authentication | Follow the repository's opaque per-device credential and secure-cookie guidance. Pairing and recovery details require security approval; no third-party identity provider is assumed. |
 | Hosting and operations | Select after workload, data-residency, support, recovery, and budget constraints are known. Compare candidates on private networking, secret management, backups, restore testing, monitoring, and operational ownership rather than assumed vendor capabilities. |
 
@@ -270,8 +275,8 @@ Instrument request latency and outcomes, authorization denials, version conflict
 
 | Phase | Work and dependencies | Validation gate |
 | --- | --- | --- |
-| 1. Approve decisions | Product owner confirms PRD defaults; security approves pairing/recovery and rate limits; operations/privacy/accessibility owners confirm their targets and responsibilities. | Decisions and acceptance criteria are recorded; no unresolved policy is treated as approved. |
-| 2. Establish foundation | Select hosting, endpoint/data-access/migration/test approaches; define workspace and device boundaries, credential lifecycle, error contracts, deletion-ledger consistency, and threat model. | Architecture and security review; workspace isolation and restore behavior have testable designs. |
+| 1. Approve decisions | Product owner approves PRD v0.8; security approves VS-01 bootstrap, credential lifecycle, and workspace-creation limits; technical lead selects the stack and verifies a reproducible baseline. | G0 decisions are recorded; pinned baseline builds and its API, browser, and PostgreSQL smoke checks pass; VS-01 specification is approved. |
+| 2. Establish foundation | Select hosting and endpoint style; define feature-specific workspace/device contracts, deletion-ledger consistency, and threat model before their slices. | Applicable architecture and security decisions for the slice are approved; workspace isolation and restore behavior have testable designs. |
 | 3. Deliver core vertical slices | Implement workspace/default-list creation, access, task/list workflows, search, due dates, and version-aware mutations in dependency order. | Unit/integration tests cover atomicity, isolation, retries, conflicts, validation, and date boundaries; browser workflows preserve drafts. |
 | 4. Pilot readiness | Add sanitized observability, rate limits, backup/restore runbooks, accessibility checks, support process, and load testing. | Restore and failure-path exercises pass; proposed service targets are accepted or revised from evidence; security/accessibility acceptance gates pass. |
 
@@ -279,13 +284,13 @@ Dates, owners, costs, and capacity estimates are TBD.
 
 ## Draft decisions and open decisions
 
-The requester selected the following dispositions for this draft. They reduce ambiguity but do not replace formal approval by the accountable owners.
+The product owner approved the PRD v0.8 product decisions. Later-slice decisions below remain pending their accountable owners.
 
 | Topic | Draft disposition | Still required |
 | --- | --- | --- |
 | Hosting | Keep the architecture provider-neutral until hosting, data-residency, budget, and operations constraints are known. | Technical/operations owners select a provider and deployment details before pilot. |
-| Workspace time zone | Capture the browser's IANA time zone at workspace creation, display it, and allow the owner to change it. | Product owner approves the default and date/overdue semantics. |
-| Pairing interaction | Show a single-use pairing code on an authorized device for entry on a new device; propose a 10-minute expiry and do not place grants in URLs or logs. | Security owner approves issuer eligibility, expiry, recovery, rate limits, and credential revocation. |
+| Workspace time zone | Capture the browser's IANA time zone at workspace creation, display it, and allow the owner to change it. | Approved in PRD v0.8. |
+| Pairing interaction | Show a single-use pairing code on an authorized device for entry on a new device; propose a 10-minute expiry and do not place grants in URLs or logs. | Security owner approves issuer eligibility, pairing-grant expiry, recovery, and pairing/recovery rate limits before VS-03. VS-01 credential lifecycle and workspace-creation limits are approved. |
 | Deletion and restore | Do not report a deletion as successful until it is durable; reconcile every acknowledged deletion before serving restored data; fail closed when reconciliation is incomplete. | Technical/operations owners define write ordering, retry/partial-failure behavior, ledger retention, and restore evidence. |
 | Pilot targets | Measure pilot baselines before making numeric performance, availability, or recovery targets commitments. | Operations validates targets; security/accessibility/support owners approve their respective acceptance criteria. |
 
@@ -293,25 +298,25 @@ The requester selected the following dispositions for this draft. They reduce am
 
 | Decision or risk | Why it matters | Owner / evidence needed |
 | --- | --- | --- |
-| Formal approval of the PRD and confirmation of decision authority | Architecture approval is recorded from the requester; the PRD remains unapproved, and the requester's organizational approval role is not specified here. | Product approver approves the PRD; confirm whether any additional organizational architecture sign-off is required. |
+| Formal approval of the PRD and confirmation of decision authority | Resolved for G0: @cjschaab confirmed product-owner authority and approved PRD v0.8 on 2026-11-13. | Recorded in the PRD approval record; no additional product authority confirmation remains open for G0. |
 | Hosting and deployment context | The architecture is intentionally provider-neutral, but pilot topology and operational ownership are not selected. | Technical/operations owners document constraints and select deployment details before pilot. |
 | Pairing and recovery rules | A code-entry interaction is selected for the draft, but credential issuance/recovery choices affect workspace security and lockout risk. | Security owner approves issuer eligibility, expiry, recovery proof, rotation, rate limits, and revocation scope. |
 | Deletion-ledger protocol | The draft now states a durability and fail-closed guarantee; the cross-store write and recovery protocol is not designed. | Technical/operations owners define ordering, retry/partial-failure behavior, retention, and restore tests. |
 | Service, accessibility, and support targets | Pilot metrics are baseline-first; numeric targets, accessibility conformance scope, and support coverage remain unapproved. | Operations, accessibility, product, and security owners validate targets and acceptance evidence. |
 | Workspace timezone and date semantics | A browser-zone default is proposed, but product semantics and user control must be approved. | Product owner confirms the default, change behavior, and overdue-date boundary. |
-| API style and implementation libraries | Controllers/minimal APIs, data-access/migration/test libraries, and runtime are not selected. | Technical lead selects these during implementation planning; they do not block approval of the high-level architecture. |
+| API style | Controllers vs. minimal APIs remains an implementation choice; selected runtime, data-access, migration, and test tooling are recorded above. | Technical lead selects endpoint style during implementation planning; baseline verification is recorded in the roadmap. |
 | Renderer validation | Mermaid source follows repository conventions, but rendered layout and theme contrast were not checked in the target renderer. | Validate diagrams in the repository's target Markdown renderer before approval. |
 
 ### Approval checklist
 
-- **Product:** approve the PRD's v1 scope, task/list rules, workspace model, and timezone/date behavior.
-- **Security:** approve the pairing and recovery policy, rate-limit policy, and credential lifecycle.
+- **Product:** PRD v0.8's v1 scope, task/list rules, workspace model, and timezone/date behavior are approved by @cjschaab.
+- **Security:** VS-01 bootstrap, credential lifecycle, and workspace-creation limits are approved by @cjschaab; pairing/recovery policy remains gated before VS-03.
 - **Technical and operations:** review the deletion-ledger/restore guarantee; document and test its implementation protocol before pilot.
 - **Operations, accessibility, analytics/privacy, and support:** approve their respective pilot measures, data handling, conformance scope, and support plan.
-- **Technical lead:** confirm that repository implementation guidance is consistent with the requester-approved architecture.
+- **Technical lead:** @cjschaab confirmed repository implementation guidance is consistent with the approved architecture and selected this repository as the application target.
 
 Provider selection, framework/library versions, endpoint style, and other implementation details may remain deferred at high-level architecture review if their owners confirm they do not invalidate the proposed boundary or security assumptions.
 
 ## Approval record
 
-@cjschaab approved this architecture specification on **2026-11-13**. The organizational approval role was not specified in the record. This approval applies to the architecture specification only; the PRD remains unapproved, and security, operations, accessibility, analytics/privacy, and implementation-readiness decisions remain pending. Do not treat architecture approval alone as authorization to begin implementation.
+@cjschaab approved this architecture specification as technical lead on **2026-11-13**, confirmed alignment with approved PRD v0.8, and approved the VS-01 decisions recorded in the implementation roadmap and specification. The pinned baseline has passed its documented build and smoke checks. G0 remains open until the VS-01 specification is explicitly approved for implementation; later pairing/recovery, deletion-ledger, pilot, and other slice gates remain separate.

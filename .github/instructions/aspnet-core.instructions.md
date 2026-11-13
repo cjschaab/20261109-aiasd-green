@@ -15,6 +15,12 @@ source: "user request"
 name: "aspnet-core"
 description: "Use when building or changing the task-manager C# and ASP.NET Core backend, including API endpoints, authorization, persistence boundaries, and errors."
 applyTo: "**/*.cs"
+revisions:
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded the pinned .NET/EF Core/Npgsql stack, approved workspace-creation limits, and reproducible baseline verification command."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 version: "1.0.0"
 author: "jMM-at-CODETraining"
 tags: ["aspnet-core", "csharp", "backend", "task-manager"]
@@ -27,7 +33,7 @@ nextReview: "2027-02-12"
 
 ## Overview
 
-Apply these rules to the task-manager backend. The approved stack is C# and ASP.NET Core in a single modular web application/API. Endpoint style, exact versions, data-access, migration, and test libraries remain unselected. Follow the [architecture specification](../../task-manager-architecture.md); these instructions do not authorize implementation.
+Apply these rules to the task-manager backend. The approved stack is .NET SDK 10.0.403 with ASP.NET Core 10, EF Core 10.0.15, and Npgsql EF Core provider 10.0.3 in a single modular web application/API. The local `dotnet-ef` tool is pinned at 10.0.15. Endpoint style and deployment provider remain unselected. Follow the [architecture specification](../../task-manager-architecture.md); these instructions do not authorize implementation. Run `./scripts/verify.sh` for the repository's reproducible baseline checks.
 
 ## Table of Contents
 
@@ -51,7 +57,7 @@ Apply these rules to the task-manager backend. The approved stack is C# and ASP.
 - Authenticate each device using its distinct, opaque credential. Store only a secure verifier server-side; never log or return raw credentials after issuance.
 - Enforce expiry and revocation on every protected request. Use the approved Secure, HttpOnly cookie policy, appropriate SameSite behavior, CSRF defenses, and origin checks for state-changing requests.
 - Make pairing grants short-lived and single-use; verify issuer authorization and consume a grant atomically with device issuance. Do not consume grants on link fetch.
-- Rate-limit workspace creation, pairing, recovery, and task read/write endpoints independently; numeric limits are open decisions and must be documented and tested before pilot launch.
+- Limit workspace creation to 5 attempts per source IP per hour and 20 per source IP per day; return retry guidance and challenge repeated abuse. Treat these limits as abuse controls, not authorization. Numeric pairing, recovery, and task read/write limits remain open and must be documented and tested before pilot launch.
 - Never log task content, device credentials, recovery secrets, pairing payloads, or sensitive request bodies/URLs. Do not expose stack traces, secret values, or cross-workspace existence in client errors.
 - Keep deployment secrets outside source control. Use explicit environment configuration and least-privilege database access.
 
@@ -67,8 +73,8 @@ Apply these rules to the task-manager backend. The approved stack is C# and ASP.
 ## Operations and Verification
 
 - Provide health/readiness behavior without disclosing secrets or task data. Emit sanitized structured logs and useful operational signals.
-- Use transactions and migrations appropriate to the selected provider and library. Make deployment and rollback compatible with schema evolution; never assume application rollback reverses a database migration.
-- Add unit and integration coverage for validation, workspace isolation, authorization expiry/revocation, pairing replay/expiry, recovery rotation, version conflicts, retry behavior, and explicit error responses.
+- Use EF Core 10 with Npgsql and the pinned `dotnet-ef` 10.0.15 tool for repeatable PostgreSQL migrations. Make deployment and rollback compatible with schema evolution; never assume application rollback reverses a database migration.
+- Use xUnit and `WebApplicationFactory` for backend tests, including integration tests against disposable PostgreSQL 18. The current baseline smoke checks are documented in `scripts/verify.sh`; feature coverage remains required for validation, workspace isolation, authorization expiry/revocation, pairing replay/expiry, recovery rotation, version conflicts, retry behavior, and explicit error responses.
 - Test restore and deletion-ledger failure paths before pilot readiness; keep the service unavailable if required safeguards cannot be applied.
 
 ## Verification Checklist

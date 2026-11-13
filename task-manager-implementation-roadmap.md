@@ -25,14 +25,19 @@ revisions:
   - chat_id: "e2a33dc9-d9fb-45d7-8e09-bb2d21c63c00"
     model: "unknown/unknown@unknown"
     date: "2026-11-13"
-    change: "Recorded the accountable owner's authority and approval, credential lifecycle and creation limits, and selected runtime and test tooling; G0 remains open pending a reproducible repository baseline and VS-01 approval."
+    change: "Recorded the accountable owner's authority and approval, credential lifecycle and creation limits, and selected runtime and test tooling."
     ai_log: "ai-logs/2026/11/13/e2a33dc9-d9fb-45d7-8e09-bb2d21c63c00/conversation.md"
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded reproducible baseline evidence; G0 remains open pending explicit VS-01 implementation approval."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
 # Task Manager Implementation Roadmap
 
-**Status:** Draft; G0 owner decisions are recorded, but G0 remains open and this plan does not authorize implementation
-**Version:** 0.3
+**Status:** G0 baseline evidence complete; G0 remains open pending explicit approval of VS-01 for implementation
+**Version:** 0.4
 **Date:** 2026-11-13  
 **Planning owner:** TBD  
 **Delivery dates, effort, budget, and named slice owners:** Not estimated; no team capacity or delivery constraints were supplied.
@@ -45,9 +50,9 @@ Sources:
 
 - [Task Manager Product Requirements Specification](task-manager-requirements.md), v0.8. On 2026-11-13, @cjschaab confirmed they are the product owner and approved it as-is. The PRD defines functional requirements FR-01 through FR-13 and quality requirements QR-01 through QR-06.
 - [Task Manager Architecture](task-manager-architecture.md), v0.2, approved by the requester on 2026-11-13. The technical lead confirmed architecture alignment with PRD v0.8. It selects one ASP.NET Core modular application serving React assets, PostgreSQL as the authoritative application store, and a separate protected deletion ledger. It does not authorize implementation by itself.
-- Repository instructions select C#/ASP.NET Core, React/TypeScript, and PostgreSQL. The technical lead has selected .NET 10 LTS / ASP.NET Core 10, PostgreSQL 18, EF Core 10 with Npgsql, React 19 with strict TypeScript and Vite, and Node.js 26 LTS. Selected test tooling is xUnit, `WebApplicationFactory`, PostgreSQL-backed integration tests using a disposable database/test container, Vitest with React Testing Library, and Playwright.
+- Repository instructions select C#/ASP.NET Core, React/TypeScript, and PostgreSQL. The technical lead selected .NET 10 LTS / ASP.NET Core 10, PostgreSQL 18, EF Core 10 with Npgsql, React 19 with strict TypeScript and Vite, and Node.js 26 LTS. Selected test tooling is xUnit, `WebApplicationFactory`, PostgreSQL-backed integration tests using a disposable database, Vitest with React Testing Library, and Playwright. The baseline pins .NET SDK 10.0.403; Node.js 26.13.1; EF Core and `dotnet-ef` 10.0.15; Npgsql 10.0.3; React 19.3.1; TypeScript 7.0.2; Vite 8.3.8; Vitest 5.1.0; React Testing Library 16.3.3; Playwright 1.65.0; and PostgreSQL 18.7 (image pinned by digest).
 
-The architecture document names PRD v0.6 as its product basis, while the current PRD is v0.8; the technical lead confirmed alignment with v0.8 on 2026-11-13. @cjschaab confirmed they are the product owner, security owner, and technical lead and approved the recorded PRD and VS-01 security recommendations. This repository is the application target. Runtime and test tooling are selected, but no application or test source, manifests, pinned versions, or reproducible commands are present.
+The architecture document names PRD v0.6 as its product basis, while the current PRD is v0.8; the technical lead confirmed alignment with v0.8 on 2026-11-13. @cjschaab confirmed they are the product owner, security owner, and technical lead and approved the recorded PRD and VS-01 security recommendations. This repository is the application target. A reproducible baseline is now present; it contains no workspace behavior, application schema, or migration.
 
 ## 2. Planning Assumptions and Readiness Decisions
 
@@ -65,9 +70,15 @@ The architecture document names PRD v0.6 as its product basis, while the current
 Required before the first product slice starts:
 
 - Product owner @cjschaab confirmed approval of PRD v0.8 as-is on 2026-11-13; this records the accountable product approval for G0.
-- The technical lead confirmed architecture alignment with PRD v0.8 and selected this repository as the application target. Supported runtime and data-access, migration, and test tooling are selected as recorded above; a reproducible repository build/test baseline is still required.
+- The technical lead confirmed architecture alignment with PRD v0.8 and selected this repository as the application target. Supported runtime and data-access, migration, and test tooling are selected as recorded above; baseline evidence is recorded below.
 - Security owner @cjschaab approved the VS-01 bootstrap policy: any visitor may create an isolated personal workspace without an account or invitation, and the creating browser receives the initial device credential after the workspace/default-list commit. Initial credentials expire after 30 days of inactivity or 180 days after issuance, whichever comes first; activity extends only the inactivity period, and logout or reported compromise revokes that device immediately. Enforce expiry only when recovery is available to prevent stranding a workspace. Limit workspace creation to 5 attempts per source IP per hour and 20 per source IP per day; return retry guidance and challenge repeated abuse. These IP limits are abuse controls, not authorization.
-- Approve the VS-01 specification and establish reproducible build/test commands, pinned versions, safe fixtures, and a PostgreSQL-backed integration-test setup before implementation begins.
+- The reproducible baseline is established as described in the evidence below. Explicit product/security/technical approval of the VS-01 specification for implementation remains required before G0 exits.
+
+### Baseline evidence
+
+The repository pins tool and dependency versions in `global.json`, `.nvmrc`, `Directory.Packages.props`, `dotnet-tools.json`, and the npm/NuGet lockfiles. `compose.yaml` pins PostgreSQL 18.7 by immutable image digest. Run `./scripts/verify.sh` from the repository root with the pinned Node.js and .NET SDK, Docker Compose, and Playwright's Chromium installed. The script runs clean locked restores, frontend unit/type checks and production build, .NET build and API tests, a PostgreSQL-backed connectivity smoke test, and a Playwright browser smoke against the ASP.NET Core host.
+
+Verification run from a clean state on 2026-11-13 passed: frontend test (1 passed), .NET build (0 warnings, 0 errors), API/PostgreSQL tests (2 passed), and Playwright smoke (1 passed). The baseline check validates tool execution and host/database wiring only; it does not validate any VS-01 behavior. Re-run `./scripts/verify.sh` to reproduce the result.
 
 Required before dependent slices or pilot, not necessarily before all feature work:
 
@@ -75,7 +86,7 @@ Required before dependent slices or pilot, not necessarily before all feature wo
 - Before task deletion/restore: technical and operations approval of ledger consistency, durability, retry, failure, retention, and restore protocol.
 - Before analytics instrumentation or pilot: product, analytics/privacy, operations, and accessibility owners approve measurement/data handling and pilot acceptance criteria.
 
-**Exit evidence:** decisions are recorded with owners; the PRD approval status and architecture/PRD version relationship are explicit; VS-01 is approved; the selected runtime/tooling has pinned versions and a reproducible build/test baseline. G0 remains open until all of this evidence is present. If a later-gate decision remains open, defer only the affected slice and record the blocker; do not silently substitute a policy.
+**Exit evidence:** decisions are recorded with owners; the PRD approval status and architecture/PRD version relationship are explicit; VS-01 is approved for implementation; the selected runtime/tooling has pinned versions and a reproducible build/test baseline. The baseline evidence is complete, but explicit VS-01 specification approval has not been recorded, so G0 remains open. If a later-gate decision remains open, defer only the affected slice and record the blocker; do not silently substitute a policy.
 
 ## 4. Dependency-Driven Vertical Slices
 
@@ -151,7 +162,7 @@ Every slice includes its client workflow, typed API contract, authorization and 
 | Risk | Impact | Mitigation / gate |
 | --- | --- | --- |
 | Architecture product basis cites PRD v0.6. | Changes in v0.7-v0.8, including time-zone, pairing, and deletion/restore decisions, may not be reflected in the approved design. | Technical lead performs a version-diff review and records whether architecture changes are needed before G0 exits. |
-| No application source or reproducible build/test baseline is present in the repository. | Tooling integration, commands, and implementation readiness are not yet demonstrated. | Establish a repository baseline with pinned versions and a reproducible build/test check using the selected tools; do not add product behavior before G0 exits. |
+| The VS-01 specification lacks explicit implementation approval. | Starting the slice without approval would bypass the readiness gate. | Obtain and record explicit approval of the VS-01 specification before closing G0 or beginning product implementation. |
 | Deletion acknowledgment spans PostgreSQL and an independent ledger. | Partial failure could acknowledge a deletion that restore later loses. | Design write ordering, idempotency, ledger retention, restore reconciliation, and failure semantics; prove with fault-injection/restore tests before VS-09 exits. |
 | Pairing and recovery rules are security-sensitive but not fully approved. | Unauthorized workspace access or permanent user lockout. | Security owner approves pairing-grant issuance/expiry, recovery proof, and pairing/recovery abuse limits before VS-03; test the already approved VS-01 credential lifecycle separately. |
 | Numeric service targets lack workload evidence. | Premature commitments or under-sized deployment. | Measure a representative pilot first; keep p95, availability, and recovery numbers provisional until Operations accepts evidence. |
@@ -169,4 +180,4 @@ The project is ready for pilot only when:
 - Pilot analytics are privacy-approved; activation and task-capture baselines are measured before numeric outcome targets are set.
 - Operations reviews measured workload and explicitly approves or revises performance, availability, and recovery targets.
 
-Immediate decisions: establish the selected runtime/tooling baseline and its reproducible commands; review and approve the VS-01 specification; keep the numeric service-wide capacity limit for workspace creation as a pilot-readiness decision based on measured capacity. G0 remains open until the baseline and specification approval are evidenced. No dates or effort estimates should be committed until team capacity and a working codebase are known.
+Immediate decision: product, security, and technical owners must explicitly approve the VS-01 specification for implementation. The runtime/tooling baseline is reproducible and recorded above. Keep the numeric service-wide capacity limit for workspace creation as a pilot-readiness decision based on measured capacity. G0 remains open until specification approval is evidenced. No dates or effort estimates should be committed until team capacity and a working codebase are known.

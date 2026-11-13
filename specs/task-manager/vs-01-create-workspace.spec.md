@@ -26,12 +26,17 @@ revisions:
     date: "2026-11-13"
     change: "Recorded the accountable owner's approval of the product/security decisions, credential lifecycle, creation limits, and recommended runtime and test tooling."
     ai_log: "ai-logs/2026/11/13/e2a33dc9-d9fb-45d7-8e09-bb2d21c63c00/conversation.md"
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded exact baseline versions and passing verification evidence; implementation approval remains outstanding."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 ---
 
 # VS-01: Create a workspace and enter it on the first authorized device
 
 - Status: Ready for review
-- Implementation gate: G0 remains open until the selected runtime/tooling has a reproducible repository build/test baseline and this specification is approved for implementation.
+- Implementation gate: The reproducible repository baseline is verified. G0 remains open until this specification is explicitly approved for implementation.
 - Owner/reviewer: Product owner (scope), security owner (initial-device authorization), and technical lead (architecture and tooling); named reviewers are TBD.
 - Sources: [Implementation roadmap](../../task-manager-implementation-roadmap.md), [Product requirements](../../task-manager-requirements.md), [Architecture](../../task-manager-architecture.md), [specification-authoring instructions](../../.github/instructions/implementation-specifications.instructions.md), [AI output instructions](../../.github/instructions/ai-assisted-output.instructions.md), [business-rule guidance](../../.github/instructions/business-rules-to-vertical-slices.instructions.md), [ASP.NET Core instructions](../../.github/instructions/aspnet-core.instructions.md), [PostgreSQL instructions](../../.github/instructions/postgresql.instructions.md), and [React/TypeScript instructions](../../.github/instructions/react-typescript.instructions.md).
 - Related use cases: None found in the repository; this slice traces to FR-01 and FR-02 and candidate rules BR-01 and BR-02.
@@ -48,14 +53,14 @@ A person can use the selected first-device flow to create a personal workspace, 
 
 ## Context and dependencies
 
-- Verified repository state: no application or test project manifests or application source are present; no build, test, migration, or local-run command is established. The requester selected this repository as the application target.
+- Verified repository state: the baseline includes minimal API/frontend projects and smoke tests, with pinned versions and a reproducible build/test command. No workspace behavior, application schema, or migration is implemented. The requester selected this repository as the application target.
 - Architecture: the approved direction is one modular ASP.NET Core application serving React assets, with PostgreSQL authoritative for application data. On 2026-11-13, @cjschaab confirmed they are the product owner, security owner, and technical lead and approved the recorded PRD and bootstrap policy. The technical lead also confirmed architecture alignment with PRD v0.8.
 - Product and security approvals: @cjschaab, identifying as the accountable product and security owner, confirmed PRD v0.8 approval and approved account-free creation of an isolated personal workspace, with the initial device credential issued to the creating browser only after successful workspace/default-list commit.
-- Selected implementation tooling: .NET 10 LTS / ASP.NET Core 10; PostgreSQL 18; EF Core 10 with Npgsql for data access and migrations; React 19 with strict TypeScript and Vite, using Node.js 26 LTS; xUnit and `WebApplicationFactory` for backend tests, PostgreSQL-backed integration tests using a disposable database/test container, Vitest with React Testing Library for frontend tests, and Playwright for browser tests. Pin exact SDK, runtime patch, package, and tool versions in the repository baseline.
-- Prerequisites: G0 in the roadmap. Product/security approval authority, credential lifecycle and per-IP creation limits, and primary runtime/tool selections are recorded. G0 remains open until a reproducible build/test baseline is established in the repository and this specification is approved for implementation.
+- Selected implementation tooling: .NET SDK 10.0.403 / ASP.NET Core 10; PostgreSQL 18.7 (immutable image digest); EF Core and `dotnet-ef` 10.0.15 with Npgsql 10.0.3; React 19.3.1 with strict TypeScript 7.0.2 and Vite 8.3.8, using Node.js 26.13.1; xUnit with `WebApplicationFactory` and PostgreSQL-backed integration tests; Vitest 5.1.0 with React Testing Library 16.3.3; and Playwright 1.65.0. Package/SDK pins and lockfiles are in the repository.
+- Prerequisites: G0 in the roadmap. Product/security approval authority, credential lifecycle, per-IP creation limits, runtime/tool selections, and a reproducible baseline are recorded. G0 remains open until this specification is explicitly approved for implementation.
 - Assumptions: the server derives workspace access from a verified device credential, not a client-supplied workspace ID. The initial credential is issued only after the workspace/default-list transaction commits and is managed by the server through its secure device-cookie mechanism.
-- Open questions/blockers: Establish a reproducible baseline and its actual commands, working directories, configuration, and safe PostgreSQL test setup; pin exact supported patch/package versions. Obtain implementation review and approval of this specification. Before pilot, set a numeric service-wide capacity limit from measured capacity. No endpoint or request/response schema is selected here.
-- Environment: .NET 10, Node.js 26 LTS, PostgreSQL 18, and the data-access, migration, and test tools listed above are selected. Exact versions, manifests, build/test commands, safe fixture setup, and local database configuration remain to be established as the repository baseline.
+- Open questions/blockers: Obtain explicit implementation review and approval of this specification. Before pilot, set a numeric service-wide capacity limit from measured capacity. No endpoint or request/response schema is selected here.
+- Environment: Run `./scripts/verify.sh` from the repository root using the pinned .NET SDK and Node.js versions, Docker Compose, and Playwright Chromium. The script starts a disposable PostgreSQL service and performs clean locked restores, frontend checks/build, .NET build/tests, PostgreSQL connectivity, and a browser smoke test. The baseline uses safe local test data and contains no VS-01 product implementation.
 
 ## Behavior and contracts
 
@@ -79,7 +84,9 @@ A person can use the selected first-device flow to create a personal workspace, 
 
 ## Verification
 
-The repository has no verified test project or runnable application at specification time. The checks below are proposed; the technical lead must identify actual test paths, commands, working directories, and prerequisites after the target repository and tooling are established. Do not treat this table as execution evidence.
+The checks below are proposed tests for VS-01 behavior; they have not been run because VS-01 is not implemented. Baseline verification is separate and does not claim coverage of the acceptance criteria. On 2026-11-13, `./scripts/verify.sh` passed from a clean state: frontend test (1 passed), .NET build (0 warnings and 0 errors), API/PostgreSQL tests (2 passed), and Playwright browser smoke (1 passed). Re-run the baseline command from the repository root; the script documents and checks its prerequisites.
+
+The focused baseline checks validate that the selected toolchain restores, builds, tests, reaches PostgreSQL 18.7, and serves the minimal frontend. They do not verify workspace creation, device authorization, rate limiting, or any AC below.
 
 | Criterion | Planned test/check | Command and working directory | Expected result |
 |-----------|--------------------|-------------------------------|-----------------|
@@ -99,7 +106,7 @@ The repository has no verified test project or runnable application at specifica
 3. Exercise an injected persistence failure and observe a non-success outcome with no partial workspace/list or usable failed-attempt credential.
 4. Repeat the flow with keyboard-only navigation and inspect logs and browser-managed storage for prohibited values.
 
-- Completion evidence: confirmed product/security approval authority; selected runtime and reproducible build/test/migration baseline; approved bootstrap, credential-lifecycle, and rate-limit policies; migration and application/test diffs; results mapped to AC-001 through AC-008; and no unresolved G0 blocker.
-- Execution evidence: Not run; specification only.
-- Risks: per-IP rate limits can affect users behind shared networks and do not replace service-wide capacity controls; a numeric service-wide capacity limit remains a pilot-readiness decision. Recovery must be available before expiry is enforced in a way that could strand a workspace. The absence of an application/test baseline prevents repository-supported commands and test paths from being named yet.
-- Next dependency/handoff: establish the selected runtime/tooling baseline and its reproducible commands, then approve this specification before implementation. After VS-01 is implemented and verified, prepare the dependent [VS-02 capture-and-view-tasks slice](../../task-manager-implementation-roadmap.md#4-dependency-driven-vertical-slices).
+- Completion evidence: confirmed product/security approval authority; selected runtime and reproducible baseline; approved bootstrap, credential-lifecycle, and rate-limit policies; explicit approval of this specification; then implementation and results mapped to AC-001 through AC-008.
+- Execution evidence: Baseline smoke checks passed as recorded above; VS-01 acceptance checks not run because workspace behavior, schema, and migrations are intentionally out of scope until approval.
+- Risks: per-IP rate limits can affect users behind shared networks and do not replace service-wide capacity controls; a numeric service-wide capacity limit remains a pilot-readiness decision. Recovery must be available before expiry is enforced in a way that could strand a workspace.
+- Next dependency/handoff: obtain explicit approval of this specification for implementation, then G0 can close. After VS-01 is implemented and verified, prepare the dependent [VS-02 capture-and-view-tasks slice](../../task-manager-implementation-roadmap.md#4-dependency-driven-vertical-slices).

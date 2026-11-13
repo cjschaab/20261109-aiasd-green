@@ -15,6 +15,12 @@ source: "user request"
 name: "react-typescript"
 description: "Use when building or changing the task-manager React and TypeScript interface, including accessibility, API state, and refresh behavior."
 applyTo: "**/*.{ts,tsx}"
+revisions:
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded pinned React/TypeScript/Vite tooling, Vitest/Playwright checks, and baseline verification."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 version: "1.0.0"
 author: "jMM-at-CODETraining"
 tags: ["react", "typescript", "frontend", "task-manager"]
@@ -27,7 +33,7 @@ nextReview: "2027-02-12"
 
 ## Overview
 
-Apply these rules to the task-manager browser interface. The approved stack is React and TypeScript; exact versions, component libraries, build tooling, and test libraries remain unselected. Follow the [architecture specification](../../task-manager-architecture.md) and do not treat these instructions as authorization to implement the application.
+Apply these rules to the task-manager browser interface. The selected baseline uses React 19.3.1, TypeScript 7.0.2 with strict checking, Vite 8.3.8, and Node.js 26.13.1. Frontend unit/component checks use Vitest 5.1.0 and React Testing Library 16.3.3; browser smoke checks use Playwright 1.65.0. Follow the [architecture specification](../../task-manager-architecture.md) and do not treat these instructions as authorization to implement the application. Run `./scripts/verify.sh` for the reproducible baseline checks.
 
 ## Table of Contents
 
@@ -64,7 +70,7 @@ Apply these rules to the task-manager browser interface. The approved stack is R
 
 ## Verification Checklist
 
-- [ ] Type-check and run the repository's configured frontend checks once tooling is selected.
+- [ ] Type-check and run the configured frontend unit, build, and browser smoke checks using `./scripts/verify.sh`.
 - [ ] Verify keyboard and screen-reader access for task, list, pairing, and recovery flows.
 - [ ] Verify refresh failure preserves the previous view and unsaved drafts.
 - [ ] Verify stale responses cannot overwrite newer edits and conflicts retain the user's draft.

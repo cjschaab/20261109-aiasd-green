@@ -15,6 +15,12 @@ source: "user request"
 name: "postgresql"
 description: "Use when designing or changing task-manager PostgreSQL schemas, queries, constraints, transactions, indexes, or database migrations."
 applyTo: "**/*.sql"
+revisions:
+  - chat_id: "140da7f0-4588-44bf-96f8-6227aac3e0a8"
+    model: "unknown/unknown@unknown"
+    date: "2026-11-13"
+    change: "Recorded PostgreSQL 18.7 and EF Core/Npgsql migration tooling and the baseline database smoke check."
+    ai_log: "ai-logs/2026/11/13/140da7f0-4588-44bf-96f8-6227aac3e0a8/conversation.md"
 version: "1.0.0"
 author: "jMM-at-CODETraining"
 tags: ["postgresql", "sql", "database", "task-manager"]
@@ -27,7 +33,7 @@ nextReview: "2027-02-12"
 
 ## Overview
 
-Apply these rules to the task-manager relational schema and SQL. PostgreSQL is the selected authoritative database. The provider, version, data-access library, and migration tooling remain unselected; verify their supported behavior during implementation planning. Follow the [architecture specification](../../task-manager-architecture.md); do not infer schema approval or implementation authorization from this guide.
+Apply these rules to the task-manager relational schema and SQL. PostgreSQL 18 is the selected authoritative database; the baseline test service uses an immutable image digest verified as PostgreSQL 18.7. Data access and migrations use EF Core 10.0.15 with Npgsql EF Core provider 10.0.3 and the `dotnet-ef` 10.0.15 tool. Follow the [architecture specification](../../task-manager-architecture.md); do not infer schema approval or implementation authorization from this guide. Run `./scripts/verify.sh` for the PostgreSQL 18 connectivity smoke check.
 
 ## Table of Contents
 
@@ -59,7 +65,7 @@ Apply these rules to the task-manager relational schema and SQL. PostgreSQL is t
 - Keep the deletion ledger independent of database restoration and limited to opaque workspace/task identifiers and deletion times; do not put task content or credentials in it.
 - Before a restored database is available, apply the latest ledger. If it is unavailable or cannot be applied, keep the restored service unavailable. Coordinate database and ledger consistency explicitly rather than assuming a single transaction covers independent stores.
 - Protect backups and expire them within the approved 30-day window. Retain ledger entries only as long as needed to cover backups that may contain the deleted task.
-- Use reviewed, repeatable migrations and preserve compatibility for deployment and rollback. Validate constraints and data transformations against representative data; do not treat an application rollback as a database rollback.
+- Use reviewed, repeatable EF Core migrations through the pinned Npgsql provider and `dotnet-ef` tool. Preserve compatibility for deployment and rollback. Validate constraints and data transformations against representative data; do not treat an application rollback as a database rollback.
 - Never use development or test data in pilot/production databases. Apply least-privilege roles and protect transport, storage, and backup keys.
 
 ## Verification Checklist
